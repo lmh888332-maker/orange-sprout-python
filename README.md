@@ -1,5 +1,7 @@
 # 橙芽 Python 学园 V7
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/lmh888332-maker/orange-sprout-python)
+
 面向 8—14 岁零基础学习者的免费 Python 入门网站。当前版本包含注册登录、18 节课程、在线代码运行、实时学习进度、课程小测、代码挑战、徽章与经验值、深色模式，以及可选的通义千问 AI 编程助教。
 
 ## 本地运行
