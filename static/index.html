@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="橙芽 Python 学园——面向零基础儿童的系统化 Python 入门学习平台"><title>橙芽 Python 学园</title><style>
+:root{--bg:#f6f0e4;--surface:#fffdf9;--surface2:#fbf5ea;--text:#292824;--muted:#716b62;--orange:#cf704c;--orange2:#ef9b77;--orange-soft:#f8dfd1;--green:#7eaa76;--green-soft:#e3efe0;--line:#decfba;--danger:#b84f45;--success:#4f8b59;--code:#20252b;--codeText:#f2f6f7;--shadow:0 16px 40px rgba(72,53,35,.10);--radius:22px}
+[data-theme=dark]{--bg:#1d1d1a;--surface:#292824;--surface2:#34312c;--text:#f4eee5;--muted:#c3baae;--orange:#ed8b68;--orange2:#f1a184;--orange-soft:#4b3028;--green:#91bf89;--green-soft:#293b2b;--line:#514940;--danger:#ff9a8e;--success:#8ed098;--code:#111519;--codeText:#f4f7f8;--shadow:0 18px 45px rgba(0,0,0,.28)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}.muted{color:var(--muted)}code{font-family:Consolas,"Courier New",monospace;background:var(--surface2);border:1px solid var(--line);padding:2px 6px;border-radius:6px}.btn{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:12px;padding:10px 16px;font-weight:800;transition:.18s}.btn:hover{transform:translateY(-1px);border-color:var(--orange)}.btn.primary{background:var(--orange);border-color:var(--orange);color:white}.btn.primary:hover{background:#bd5e3b}.btn.green{background:var(--green);border-color:var(--green);color:white}.btn.danger{color:var(--danger);background:transparent}.tag{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:var(--green-soft);color:var(--green);font-size:12px;font-weight:800}.tag.orange{background:var(--orange-soft);color:var(--orange)}
+/* auth */
+.auth{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 15% 15%,color-mix(in srgb,var(--orange) 18%,transparent),transparent 30%),radial-gradient(circle at 88% 82%,color-mix(in srgb,var(--green) 20%,transparent),transparent 32%),var(--bg)}.auth-shell{width:min(980px,100%);display:grid;grid-template-columns:1.08fr .92fr;border:1px solid var(--line);border-radius:30px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}.auth-story{padding:54px 46px;background:linear-gradient(145deg,var(--orange-soft),var(--surface2));display:flex;flex-direction:column;justify-content:center}.logo{font-size:25px;font-weight:950;color:var(--orange);letter-spacing:.5px}.auth-story h1{font-size:44px;line-height:1.18;margin:28px 0 14px}.auth-story p{font-size:17px;line-height:1.9;color:var(--muted)}.auth-list{display:grid;gap:13px;margin-top:18px}.auth-list div{display:flex;gap:12px;align-items:flex-start;line-height:1.65}.auth-list b{width:31px;height:31px;border-radius:50%;background:var(--surface);color:var(--green);display:grid;place-items:center;flex:0 0 auto;border:1px solid var(--line)}.auth-card{padding:43px;display:flex;flex-direction:column;justify-content:center}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:7px;background:var(--bg);border-radius:14px;padding:5px;margin-bottom:24px}.auth-tabs button{border:0;background:transparent;padding:11px;border-radius:10px;color:var(--muted);font-weight:800}.auth-tabs button.active{background:var(--surface);color:var(--orange);box-shadow:0 3px 12px rgba(0,0,0,.06)}.form{display:grid;gap:13px}.form h2{font-size:28px;margin:0}.form>p{margin:0 0 6px;color:var(--muted);line-height:1.6}.field{display:grid;gap:7px}.field label{font-size:14px;font-weight:800}.field input,.field select{width:100%;padding:12px 14px;border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:12px;outline:none}.field input:focus,.field select:focus{border-color:var(--orange);box-shadow:0 0 0 3px color-mix(in srgb,var(--orange) 18%,transparent)}.consent{display:flex;align-items:flex-start;gap:9px;font-size:13px;line-height:1.55;color:var(--muted)}.consent input{margin-top:3px}.form-msg{min-height:22px;font-size:14px;color:var(--danger)}.form-msg.ok{color:var(--success)}
+/* shell */
+.topbar{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}.top-inner{max-width:1240px;margin:auto;padding:12px 20px;display:flex;align-items:center;gap:16px}.brand{font-size:21px;font-weight:950;color:var(--orange);white-space:nowrap}.nav{display:flex;gap:7px;flex-wrap:wrap}.nav button{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:12px;padding:8px 13px}.nav button.active{background:var(--orange);border-color:var(--orange);color:white}.spacer{flex:1}.user{display:flex;align-items:center;gap:8px}.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--green-soft);color:var(--green);font-weight:950}.user-meta{line-height:1.3}.user-meta b{display:block;font-size:14px}.user-meta span{font-size:12px;color:var(--muted)}.main{max-width:1240px;margin:auto;padding:28px 20px 80px}.view{display:none}.view.active{display:block}.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}.panel.flat{box-shadow:none}.section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:32px 0 15px}.section-head h2{margin:0;font-size:28px}.section-head p{margin:4px 0 0;color:var(--muted)}
+/* dashboard */
+.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}.hero-main{padding:34px;background:linear-gradient(135deg,var(--surface),var(--orange-soft))}.eyebrow{color:var(--orange);font-weight:900;margin-bottom:9px}.hero h1{font-size:43px;line-height:1.17;margin:0 0 14px}.hero .lead{font-size:17px;line-height:1.85;color:var(--muted);max-width:720px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.today-card h3{font-size:20px;margin:0 0 12px}.today-card .next{font-size:24px;font-weight:900;margin:8px 0}.progress{height:11px;background:color-mix(in srgb,var(--line) 70%,transparent);border-radius:999px;overflow:hidden}.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--orange));transition:.3s}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-top:18px}.stat{background:var(--surface);border:1px solid var(--line);border-radius:17px;padding:18px}.stat b{font-size:27px;color:var(--orange);display:block;margin-bottom:4px}.stat span{font-size:13px;color:var(--muted)}
+.learning-guide{display:grid;grid-template-columns:.85fr 1.15fr;gap:18px}.guide-intro h2{font-size:30px;margin:0 0 12px}.guide-intro p{color:var(--muted);line-height:1.85}.weekly-plan{background:var(--green-soft);border-radius:16px;padding:17px;margin-top:18px}.weekly-plan b{display:block;color:var(--green);margin-bottom:7px}.guide-steps{display:grid;gap:11px}.guide-step{display:grid;grid-template-columns:48px 1fr auto;gap:14px;align-items:start;border:1px solid var(--line);border-radius:16px;padding:16px;background:var(--surface2)}.guide-step .n{width:42px;height:42px;border-radius:13px;background:var(--orange);color:white;display:grid;place-items:center;font-weight:950}.guide-step h3{margin:0 0 5px;font-size:17px}.guide-step p{margin:0;color:var(--muted);line-height:1.65;font-size:14px}.guide-step time{font-size:12px;color:var(--green);font-weight:900;white-space:nowrap}
+/* path */
+.path-layout{display:grid;grid-template-columns:290px 1fr;gap:18px}.path-side{position:sticky;top:90px;height:max-content}.overall-ring{width:130px;height:130px;border-radius:50%;margin:10px auto 15px;display:grid;place-items:center;background:conic-gradient(var(--orange) 0deg,var(--line) 0deg);position:relative}.overall-ring:after{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--surface)}.overall-ring b{position:relative;z-index:2;font-size:25px}.module-list{display:grid;gap:16px}.module-card{border:1px solid var(--line);border-radius:20px;background:var(--surface);overflow:hidden}.module-head{padding:20px;display:flex;align-items:center;gap:14px;background:linear-gradient(90deg,var(--surface2),var(--surface))}.module-icon{font-size:30px}.module-head h3{margin:0 0 4px}.module-head p{margin:0;color:var(--muted);font-size:14px}.module-score{margin-left:auto;text-align:right;font-size:13px;color:var(--muted)}.lesson-list{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px}.lesson-card{border:1px solid var(--line);border-radius:15px;padding:15px;background:var(--surface2);transition:.18s;cursor:pointer;min-height:154px}.lesson-card:hover{transform:translateY(-2px);border-color:var(--orange)}.lesson-card.locked{opacity:.55;cursor:not-allowed}.lesson-card.done{border-color:var(--green);background:var(--green-soft)}.lesson-top{display:flex;justify-content:space-between;align-items:center}.lesson-no{width:31px;height:31px;border-radius:10px;display:grid;place-items:center;background:var(--orange);color:white;font-weight:900}.lesson-card.done .lesson-no{background:var(--green)}.lesson-card h4{margin:12px 0 6px;font-size:16px}.lesson-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}.lesson-card small{display:block;margin-top:10px;color:var(--muted)}
+/* lesson */
+.lesson-page{display:grid;grid-template-columns:250px 1fr;gap:18px}.lesson-nav{position:sticky;top:90px;height:max-content}.back-link{border:0;background:none;color:var(--orange);font-weight:900;padding:0 0 14px}.lesson-nav h3{margin:0 0 9px}.objective{display:flex;gap:8px;margin:10px 0;font-size:13px;line-height:1.55;color:var(--muted)}.objective:before{content:"✓";color:var(--green);font-weight:900}.lesson-content h1{font-size:35px;margin:0 0 8px}.lesson-summary{color:var(--muted);line-height:1.8;margin-bottom:22px}.content-section{border-top:1px solid var(--line);padding:22px 0}.content-section h2{font-size:23px;margin:0 0 10px}.content-section p{line-height:1.9;color:var(--muted);margin:0}.code-sample{background:var(--code);color:var(--codeText);padding:18px;border-radius:16px;white-space:pre-wrap;line-height:1.65;overflow:auto;font-family:Consolas,"Courier New",monospace}.challenge{background:var(--orange-soft);border:1px solid color-mix(in srgb,var(--orange) 35%,var(--line));border-radius:18px;padding:19px}.challenge h3{margin:0 0 7px}.quiz-box{border:1px solid var(--line);border-radius:18px;padding:20px;background:var(--surface2)}.options{display:grid;gap:9px;margin:15px 0}.option{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer}.option:hover{border-color:var(--orange)}.quiz-feedback{min-height:28px;line-height:1.65;font-weight:700}.quiz-feedback.ok{color:var(--success)}.quiz-feedback.bad{color:var(--danger)}
+/* practice */
+.practice-grid{display:grid;grid-template-columns:1fr 350px;gap:18px}.question-card h3{font-size:23px;margin-top:0}.practice-actions{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:18px}.wrong-list{display:grid;gap:10px}.wrong-item{border:1px solid var(--line);border-radius:13px;padding:13px;background:var(--surface2)}.wrong-item b{display:block;margin-bottom:5px}.wrong-item span{font-size:13px;color:var(--muted)}
+/* lab */
+.lab-layout{display:grid;grid-template-columns:280px 1fr;gap:18px}.task-list{display:grid;gap:9px}.task-btn{width:100%;text-align:left;border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:13px;padding:13px}.task-btn.active{border-color:var(--orange);background:var(--orange-soft)}.task-btn b{display:block;margin-bottom:7px}.task-btn span{font-size:12px;color:var(--muted)}.task-btn .task-seq{display:inline-flex;margin-right:8px;padding:3px 7px;border-radius:8px;background:var(--green-soft);color:var(--green);font-size:11px;font-weight:950}.task-btn.active .task-seq{background:var(--surface);color:var(--orange)}.lab-head{display:flex;justify-content:space-between;gap:15px;align-items:start}.lab-head h2{margin:0 0 8px}.lab-work{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}.editor,.output{width:100%;min-height:400px;border:1px solid #323840;border-radius:16px;background:var(--code);color:var(--codeText);padding:17px;font-family:Consolas,"Courier New",monospace;line-height:1.65;font-size:15px;outline:none}.editor{resize:vertical}.output{white-space:pre-wrap;overflow:auto}.output.loading{color:#f1cb74}.output.error{color:#ff9a90}.output.success{color:#9bd9a0}.hint-box{margin-top:12px;border-left:4px solid var(--green);background:var(--green-soft);padding:12px 15px;border-radius:10px;line-height:1.7;color:var(--muted)}
+/* profile */
+.profile-grid{display:grid;grid-template-columns:360px 1fr;gap:18px}.profile-card{text-align:center}.big-avatar{width:92px;height:92px;border-radius:30px;background:var(--green-soft);display:grid;place-items:center;margin:0 auto 14px;font-size:36px}.profile-card h2{margin:0 0 4px}.profile-card p{color:var(--muted)}.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:17px}.profile-stats div{border:1px solid var(--line);border-radius:14px;padding:12px}.profile-stats b{font-size:21px;color:var(--orange);display:block}.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.badge{border:1px solid var(--line);border-radius:16px;padding:15px;background:var(--surface2);opacity:.45}.badge.earned{opacity:1;border-color:var(--green);background:var(--green-soft)}.badge .ico{font-size:28px}.badge h4{margin:8px 0 4px}.badge p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}.module-progress{display:grid;gap:13px}.module-row{display:grid;grid-template-columns:180px 1fr 60px;gap:12px;align-items:center}.module-row b{font-size:14px}.module-row span{text-align:right;color:var(--muted);font-size:13px}.lesson-progress-wrap{margin-top:18px}.lesson-progress-meta{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:9px;font-size:13px;color:var(--muted)}.lesson-progress-meta strong{color:var(--orange)}.flow-item{transition:.25s}.flow-item.stage-done{border-top-color:var(--green);background:linear-gradient(180deg,var(--green-soft),transparent)}.flow-item.stage-current{box-shadow:0 0 0 2px color-mix(in srgb,var(--orange) 35%,transparent)}
+/* assistant */
+.assistant-fab{position:fixed;right:24px;bottom:24px;z-index:45;border:0;border-radius:18px;background:var(--orange);color:white;padding:13px 18px;font-weight:900;box-shadow:var(--shadow)}.assistant{position:fixed;right:24px;bottom:82px;z-index:44;width:min(390px,calc(100vw - 32px));border:1px solid var(--line);border-radius:20px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden}.assistant-head{padding:15px 17px;background:var(--orange-soft);display:flex;justify-content:space-between;align-items:center}.assistant-head h3{margin:0}.assistant-body{padding:15px;display:grid;gap:11px}.assistant-messages{height:260px;overflow:auto;display:grid;gap:10px;align-content:start}.msg{max-width:90%;padding:10px 12px;border-radius:13px;line-height:1.6;font-size:14px}.msg.bot{background:var(--surface2);border:1px solid var(--line)}.msg.me{background:var(--orange);color:white;margin-left:auto}.assistant textarea{width:100%;min-height:76px;padding:11px;border:1px solid var(--line);border-radius:12px;background:var(--surface2);color:var(--text);resize:vertical}.assistant-actions{display:flex;justify-content:flex-end;gap:8px}.empty{border:1px dashed var(--line);border-radius:16px;padding:28px;text-align:center;color:var(--muted);background:var(--surface2)}
+.toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,20px);z-index:80;background:var(--text);color:var(--surface);padding:11px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:980px){.hero,.learning-guide,.path-layout,.lesson-page,.practice-grid,.lab-layout,.profile-grid{grid-template-columns:1fr}.path-side,.lesson-nav{position:static}.lesson-list{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}.lab-work{grid-template-columns:1fr}.badges{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.auth-shell{grid-template-columns:1fr}.auth-story{display:none}.auth-card{padding:30px 22px}.top-inner{flex-wrap:wrap}.brand{width:100%}.nav{order:3;width:100%;display:grid;grid-template-columns:repeat(5,1fr)}.nav button{padding:8px 3px;font-size:12px}.user-meta{display:none}.main{padding:20px 13px 70px}.panel{padding:19px}.hero-main{padding:24px}.hero h1{font-size:34px}.lesson-list,.stats,.badges{grid-template-columns:1fr}.guide-step{grid-template-columns:42px 1fr}.guide-step time{grid-column:2}.module-row{grid-template-columns:130px 1fr 48px}.assistant-fab{right:14px;bottom:14px}.assistant{right:14px;bottom:72px}.profile-stats{grid-template-columns:1fr}}
+
+.field-help{display:block;margin-top:7px;color:var(--muted);font-size:12px;line-height:1.55}
+.lesson-list{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+.lesson-card{min-height:auto!important;display:grid;grid-template-columns:42px 1fr auto;gap:12px;align-items:center;padding:13px 15px!important}
+.lesson-card .lesson-top{display:contents}.lesson-card .lesson-no{grid-column:1;grid-row:1/3}.lesson-card .tag{grid-column:3;grid-row:1/3;align-self:center}.lesson-card h4{grid-column:2;margin:0!important}.lesson-card p{grid-column:2;margin:0!important}.lesson-card small{display:none!important}
+.lesson-hero{padding-bottom:24px;border-bottom:1px solid var(--line);margin-bottom:4px}.lesson-kicker{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.lesson-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:20px 0}.flow-item{padding:12px 10px;border-top:3px solid var(--orange);background:linear-gradient(180deg,var(--orange-soft),transparent);border-radius:10px}.flow-item b{display:block;font-size:13px}.flow-item span{font-size:12px;color:var(--muted)}
+.knowledge-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.knowledge-point{display:flex;gap:9px;align-items:flex-start;padding:12px;border-radius:12px;background:var(--surface2)}.knowledge-point i{font-style:normal;width:24px;height:24px;border-radius:8px;background:var(--green-soft);display:grid;place-items:center;color:var(--success);font-weight:900}.knowledge-point span{font-size:13px;line-height:1.55}
+.application-line{display:flex;gap:14px;align-items:flex-start;padding:18px 0}.application-visual{width:58px;height:58px;border-radius:18px;background:linear-gradient(135deg,var(--orange),var(--green));display:grid;place-items:center;color:white;font-size:26px;flex:none}.application-line p{margin:2px 0 0!important}
+.mistake-list{display:grid;gap:9px;margin-top:12px}.mistake-item{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line);color:var(--muted)}.mistake-item:last-child{border-bottom:0}.mistake-item:before{content:'!';width:24px;height:24px;border-radius:50%;background:#fff0ec;color:var(--danger);display:grid;place-items:center;font-weight:900;flex:none}
+.video-resource{display:grid;grid-template-columns:180px 1fr auto;gap:18px;align-items:center;padding:18px;border-radius:18px;background:linear-gradient(135deg,#272a30,#3c2d28);color:white}.video-thumb{height:100px;border-radius:13px;background:radial-gradient(circle at 35% 35%,#f2a36f 0 8%,transparent 9%),linear-gradient(135deg,#d0704e,#7c9b6b);display:grid;place-items:center;font-size:34px}.video-resource h3{margin:0 0 6px}.video-resource p{color:#e9ddd5!important;margin:0!important}.video-resource .btn{white-space:nowrap;background:white;color:#7a4634;border-color:white}.lesson-footer-actions{display:flex;justify-content:space-between;align-items:center;gap:15px}.auto-next-note{font-size:13px;color:var(--muted);margin-top:6px}
+.runtime-badge{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}.runtime-badge:before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green)}
+@media(max-width:760px){.lesson-flow,.knowledge-strip{grid-template-columns:1fr 1fr}.video-resource{grid-template-columns:1fr}.video-thumb{height:80px}.lesson-card{grid-template-columns:38px 1fr}.lesson-card .tag{grid-column:2;grid-row:3;justify-self:start}.lesson-card .lesson-no{grid-row:1/4}.lesson-footer-actions{align-items:flex-start;flex-direction:column}}
+
+.assistant-provider{font-size:12px;font-weight:800;color:var(--orange);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 9px;margin-left:auto;margin-right:8px}
+.lab-return-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.lab-result-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.15)}
+.auth-success{color:var(--green);font-weight:800}
+
+</style></head>
+<body>
+<section id="auth" class="auth">
+ <div class="auth-shell">
+  <div class="auth-story"><div class="logo">🍊 橙芽 Python 学园</div><h1>从第一行代码，<br>走到自己的小项目</h1><p>每节课都按照讲解、示例、动手修改、小测和复习五个环节展开，让零基础学习者真正理解并写出代码。</p><div class="auth-list"><div><b>1</b><span><strong>建立学习账号</strong><br><span class="muted">保存课程、练习和错题记录</span></span></div><div><b>2</b><span><strong>按学习路径逐步完成</strong><br><span class="muted">6个模块、18节系统课程</span></span></div><div><b>3</b><span><strong>在代码实验室真实运行</strong><br><span class="muted">修改示例、观察结果、完成挑战</span></span></div></div></div>
+  <div class="auth-card"><div class="auth-tabs"><button id="loginTab" class="active">登录</button><button id="registerTab">注册</button></div>
+   <form id="loginForm" class="form"><h2>欢迎回来</h2><p>继续上一次的学习进度。</p><div class="field"><label>学习账号</label><input id="loginUsername" autocomplete="username" placeholder="请输入注册时的学习账号" required></div><div class="field"><label>密码</label><input id="loginPassword" type="password" autocomplete="current-password" required></div><button class="btn primary" type="submit">登录并进入学园</button><div id="loginMsg" class="form-msg"></div></form>
+   <form id="registerForm" class="form hidden"><h2>创建学习账号</h2><p>创建一个容易记住的学习账号。</p><div class="field"><label>学习账号</label><input id="regAccount" minlength="2" maxlength="20" placeholder="中文、字母、数字或下划线" required><small class="field-help">这个名称同时用于登录和页面显示，不需要另外填写昵称。</small></div><div class="field"><label>密码</label><input id="regPassword" type="password" minlength="6" autocomplete="new-password" required></div><div class="field"><label>确认密码</label><input id="regPasswordConfirm" type="password" minlength="6" autocomplete="new-password" required></div><div class="field"><label>年龄段</label><select id="regAge"><option value="8-10">8—10岁</option><option value="11-12">11—12岁</option><option value="13-14">13—14岁</option><option value="other">其他</option></select></div><label class="consent"><input id="guardianConsent" type="checkbox" required><span>我已获得监护人同意，并同意使用昵称和学习记录完成课程服务。</span></label><button class="btn primary" type="submit">注册并开始学习</button><div id="registerMsg" class="form-msg"></div></form>
+  </div>
+ </div>
+</section>
+<div id="app" class="hidden">
+ <header class="topbar"><div class="top-inner"><div class="brand">🍊 橙芽 Python 学园</div><nav class="nav"><button data-view="home" class="active">首页</button><button data-view="path">学习路径</button><button data-view="practice">练习中心</button><button data-view="lab">代码实验室</button><button data-view="profile">我的学习</button></nav><div class="spacer"></div><button id="themeBtn" class="btn">深色</button><div class="user"><div class="avatar" id="avatar">橙</div><div class="user-meta"><b id="navNickname">学习者</b><span id="navLevel">等级 1</span></div><button id="logoutBtn" class="btn danger">退出</button></div></div></header>
+ <main class="main">
+  <section id="view-home" class="view active"><div class="hero"><div class="panel hero-main"><div class="eyebrow" id="helloText">今天继续成长</div><h1>一步一练，写出真正能运行的 Python</h1><p class="lead">课程从生活问题开始，用短讲解建立概念，再通过修改代码、完成小测和复习错题形成完整学习闭环。</p><div class="actions"><button id="continueBtn" class="btn primary">继续学习</button><button class="btn" data-go="path">查看完整路径</button></div></div><div class="panel today-card"><span class="tag orange">本次学习建议</span><h3>下一步</h3><div id="nextLessonTitle" class="next">第1课 程序是怎样工作的</div><p id="nextLessonSummary" class="muted">认识程序、指令和输入处理输出。</p><div class="progress"><i id="homeProgress"></i></div><p id="homeProgressText" class="muted">已完成 0 / 18</p></div></div>
+   <div class="stats"><div class="stat"><b id="statLessons">0</b><span>完成课程</span></div><div class="stat"><b id="statQuiz">0</b><span>完成小测</span></div><div class="stat"><b id="statCode">0</b><span>代码挑战通过</span></div><div class="stat"><b id="statStreak">0</b><span>连续学习天数</span></div></div>
+   <div class="section-head"><div><h2>怎样完成一节课</h2><p>不是只看卡片，而是按照完整学习流程行动。</p></div></div><div class="learning-guide"><div class="panel guide-intro"><h2>五步学习法</h2><p>每次学习建议安排20—30分钟。先理解，再模仿；先运行，再修改；最后通过小测检查是否真正掌握。</p><div class="weekly-plan"><b>一周学习建议</b><span>每周完成3节课、2次代码挑战和1次错题复习。比一次学很多更容易形成稳定能力。</span></div></div><div class="guide-steps"><div class="guide-step"><div class="n">1</div><div><h3>理解任务</h3><p>先看学习目标和生活情境，回答“这段代码要解决什么问题”。</p></div><time>3分钟</time></div><div class="guide-step"><div class="n">2</div><div><h3>阅读与预测</h3><p>逐行阅读示例，在运行前先猜测输出结果，再比较自己的预测。</p></div><time>5分钟</time></div><div class="guide-step"><div class="n">3</div><div><h3>修改并运行</h3><p>改变数字、文字或条件，观察结果变化，理解每个部分的作用。</p></div><time>8分钟</time></div><div class="guide-step"><div class="n">4</div><div><h3>独立完成挑战</h3><p>先尝试，再按顺序查看提示；不要直接复制完整答案。</p></div><time>8分钟</time></div><div class="guide-step"><div class="n">5</div><div><h3>小测与复习</h3><p>答对本课小测后完成课程；答错内容会进入错题记录，之后再次练习。</p></div><time>5分钟</time></div></div></div>
+   <div class="section-head"><div><h2>当前学习模块</h2><p id="homeModuleText">从编程启航开始。</p></div><button class="btn" data-go="path">进入学习路径</button></div><div id="homeModule" class="panel"></div>
+  </section>
+  <section id="view-path" class="view"><div class="section-head"><div><h2>系统学习路径</h2><p>6个模块、18节课程，完成上一课后解锁下一课。</p></div></div><div class="path-layout"><aside class="panel path-side"><span class="tag">个人总进度</span><div id="overallRing" class="overall-ring"><b id="overallPercent">0%</b></div><p id="overallText" class="muted" style="text-align:center">已完成 0 / 18</p><hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><b>学习原则</b><p class="muted" style="line-height:1.75;font-size:14px">先完成本课小测，再标记课程完成。遇到错误时先观察报错行，再使用智能助教获得分步提示。</p></aside><div id="moduleList" class="module-list"></div></div></section>
+  <section id="view-lesson" class="view"><div id="lessonPage"></div></section>
+  <section id="view-practice" class="view"><div class="section-head"><div><h2>练习中心</h2><p>从已解锁课程中随机抽题，答错内容自动加入错题记录。</p></div><button id="newPracticeBtn" class="btn primary">开始新练习</button></div><div class="practice-grid"><div id="practiceCard" class="panel question-card"><div class="empty">点击“开始新练习”，系统将从已学内容中抽取6道题。</div></div><aside class="panel"><h3 style="margin-top:0">错题记录</h3><p class="muted">答错后查看解析，并在下一次练习中再次遇到它。</p><div id="wrongList" class="wrong-list"></div></aside></div></section>
+  <section id="view-lab" class="view"><div class="section-head"><div><h2>代码实验室</h2><p>选择任务、修改代码、真实运行并检查结果。</p></div></div><div class="lab-return-row"><button id="labBackPathBtn" class="btn">← 返回学习路径</button><button id="labOpenLessonBtn" class="btn">进入对应课程</button><span class="muted">完成挑战后可以继续回到课程学习。</span></div><div class="lab-layout"><aside class="panel"><h3 style="margin-top:0">挑战任务</h3><div id="taskList" class="task-list"></div></aside><div class="panel"><div class="lab-head"><div><span id="taskLevel" class="tag orange">入门</span><h2 id="taskTitle">自我介绍生成器</h2><p id="taskInstruction" class="muted"></p></div><div class="actions"><button id="resetCodeBtn" class="btn">恢复代码</button><button id="hintBtn" class="btn">查看提示</button><button id="runCodeBtn" class="btn primary">运行并检查</button></div></div><div id="hintBox" class="hint-box hidden"></div><div class="lab-work"><textarea id="codeEditor" class="editor" spellcheck="false"></textarea><div id="codeOutput" class="output">运行结果会显示在这里。<div id="labResultActions" class="lab-result-actions hidden"><button id="resultBackPathBtn" class="btn">返回学习路径</button><button id="resultOpenLessonBtn" class="btn green">进入对应课程</button></div></div></div></div></div></section>
+  <section id="view-profile" class="view"><div class="section-head"><div><h2>我的学习</h2><p>查看个人进度、能力徽章和各模块完成情况。</p></div></div><div class="profile-grid"><aside class="panel profile-card"><div class="big-avatar">🍊</div><h2 id="profileNickname">学习者</h2><p id="profileUsername">@username</p><div class="profile-stats"><div><b id="profileXp">0</b><span class="muted">经验值</span></div><div><b id="profileLevel">1</b><span class="muted">等级</span></div><div><b id="profileStreak">0</b><span class="muted">连续天数</span></div></div></aside><div><div class="panel"><h3 style="margin-top:0">能力徽章</h3><div id="badges" class="badges"></div></div><div class="panel" style="margin-top:18px"><h3 style="margin-top:0">模块完成情况</h3><div id="moduleProgress" class="module-progress"></div></div></div></div></section>
+ </main>
+ <button id="assistantFab" class="assistant-fab">✨ 智能助教</button><section id="assistant" class="assistant hidden"><div class="assistant-head"><h3>智能助教</h3><span id="assistantProvider" class="assistant-provider">基础助教</span><button id="assistantClose" class="btn">关闭</button></div><div class="assistant-body"><div id="assistantMessages" class="assistant-messages"><div class="msg bot">把看不懂的概念、报错信息或代码贴给我。我会先给提示，再帮助你定位问题。</div></div><textarea id="assistantInput" placeholder="例如：为什么我的 if 下面会报缩进错误？"></textarea><div class="assistant-actions"><button id="assistantSend" class="btn primary">发送问题</button></div></div></section>
+</div><div id="toast" class="toast"></div>
+<script>window.APP_DATA={"modules": [{"id": 1, "title": "编程启航", "subtitle": "认识程序，写出第一段 Python 代码", "icon": "🚀"}, {"id": 2, "title": "数据魔法", "subtitle": "学会变量、数字与字符串", "icon": "🎒"}, {"id": 3, "title": "逻辑闯关", "subtitle": "让程序根据条件作出选择", "icon": "🧭"}, {"id": 4, "title": "循环工坊", "subtitle": "用重复执行解决成批任务", "icon": "🔁"}, {"id": 5, "title": "数据仓库", "subtitle": "使用列表和字典整理信息", "icon": "🗂️"}, {"id": 6, "title": "函数与创作", "subtitle": "封装能力，完成综合小项目", "icon": "🧩"}], "lessons": [{"id": 1, "module": 1, "title": "程序是怎样工作的", "duration": 12, "summary": "从生活中的步骤出发，理解程序、指令和 Python 的关系。", "objectives": ["知道程序是一组按顺序执行的指令", "能分辨输入、处理和输出", "了解 Python 适合初学者的原因"], "sections": [{"title": "从生活步骤理解程序", "body": "做一杯果汁需要准备水果、切块、放入机器并启动。计算机也需要清楚、准确、按顺序的步骤，这些步骤就是<strong>指令</strong>，一组指令组成<strong>程序</strong>。"}, {"title": "输入—处理—输出", "body": "许多程序都可以拆成三个部分：接收信息（输入）、按照规则计算（处理）、把结果展示出来（输出）。之后学习的每个项目，都可以用这三个问题检查。"}], "code": "print(\"你好，Python！\")", "challenge": {"title": "观察第一条指令", "instruction": "运行代码，观察屏幕输出。然后把文字改成自己的问候语。", "starter": "print(\"你好，Python！\")", "expected": "你好，Python！", "hints": ["print 后面的小括号中放要显示的内容。", "文字需要放在成对的引号中。"]}, "quiz": {"id": "q1", "question": "下面哪一项最符合“程序”的含义？", "options": ["一组按顺序执行的指令", "一台计算机的外壳", "网页上的一张图片", "键盘上的某个按键"], "answer": 0, "explain": "程序是让计算机完成任务的一组明确指令。"}, "video": {"topic": "认识 Python 与程序", "url": "https://www.bilibili.com/video/BV1x14y1H7VM/?p=2", "title": "少儿 Python：初认识", "source": "哔哩哔哩公开学习资源"}, "application": "程序思维可以用来设计闹钟流程、整理做事步骤，也能帮助检查任务是否有遗漏。", "mistakes": ["把程序理解成“随便写几行”", "忽略指令顺序", "没有区分输入、处理和输出"], "keyPoints": ["知道程序是一组按顺序执行的指令", "能分辨输入、处理和输出", "了解 Python 适合初学者的原因"]}, {"id": 2, "module": 1, "title": "用 print 输出信息", "duration": 14, "summary": "学习 print()、字符串和多行输出，写出清楚的自我介绍。", "objectives": ["会使用 print() 输出文字和数字", "知道字符串要放在引号中", "能用多条语句组织输出"], "sections": [{"title": "print() 是输出窗口", "body": "<code>print()</code> 会把括号中的内容显示到运行结果区。每执行一次 print，通常会换到下一行。"}, {"title": "文字与数字的区别", "body": "文字属于字符串，需要使用引号；数字可以直接写。<code>print(3 + 4)</code> 会先计算再输出 7，而 <code>print(\"3 + 4\")</code> 会原样显示文字。"}], "code": "print(\"我是小橙\")\nprint(\"我正在学习 Python\")\nprint(3 + 4)", "challenge": {"title": "制作三行自我介绍", "instruction": "输出你的昵称、兴趣和今天想完成的目标，每项各占一行。", "starter": "print(\"我的昵称是：小橙\")\nprint(\"我的兴趣是：画画\")\nprint(\"今天我要完成第2课\")", "expected": "我的昵称是：小橙\n我的兴趣是：画画\n今天我要完成第2课", "hints": ["每一行使用一次 print。", "中文文字需要放在引号中。"]}, "quiz": {"id": "q2", "question": "哪一行代码会输出数字 8？", "options": ["print(\"5 + 3\")", "print(5 + 3)", "print = 8", "8(print)"], "answer": 1, "explain": "不加引号时，Python 会先完成加法，再输出结果。"}, "video": {"topic": "print 输出函数", "url": "https://www.bilibili.com/video/BV1x14y1H7VM/?p=3", "title": "少儿 Python：输出函数 print", "source": "哔哩哔哩公开学习资源"}, "application": "输出是程序和使用者沟通的第一种方式，可用于提示、成绩报告和游戏信息。", "mistakes": ["漏写括号或引号", "把数字运算写进引号", "忘记每条输出语句的换行效果"], "keyPoints": ["会使用 print() 输出文字和数字", "知道字符串要放在引号中", "能用多条语句组织输出"]}, {"id": 3, "module": 1, "title": "输入、注释与清晰代码", "duration": 16, "summary": "让程序接收信息，并用注释说明代码的用途。", "objectives": ["理解 input() 的作用", "会使用 # 编写单行注释", "能给变量取清楚的名字"], "sections": [{"title": "程序也会提问", "body": "<code>input()</code> 会暂停程序并等待用户输入。在浏览器练习中，为了便于自动检查，本课先用固定变量模拟输入；部署后也可以继续使用 input。"}, {"title": "注释是写给人看的说明", "body": "以 <code>#</code> 开头的内容不会被 Python 执行。注释应解释“为什么这样做”，而不是重复代码本身。"}], "code": "# 保存学习者昵称\nname = \"小橙\"\nprint(\"欢迎你，\" + name)", "challenge": {"title": "补充一条有用的注释", "instruction": "修改昵称，并在第一行用注释说明这个变量保存什么信息。", "starter": "# 这里保存学习者的昵称\nname = \"小橙\"\nprint(\"欢迎你，\" + name)", "expected": "欢迎你，小橙", "hints": ["注释以 # 开头。", "字符串拼接可以使用 +。"]}, "quiz": {"id": "q3", "question": "Python 中哪一种写法是注释？", "options": ["// 说明", "# 说明", "<!-- 说明 -->", "** 说明"], "answer": 1, "explain": "Python 单行注释以 # 开头。"}, "video": {"topic": "输入、注释与代码规范", "url": "https://www.bilibili.com/video/BV1eZ421b7ag/?p=7", "title": "尚硅谷：注释与第一个程序", "source": "哔哩哔哩公开学习资源"}, "application": "输入让程序能够回应不同的人；注释能帮助自己和同伴快速理解代码。", "mistakes": ["变量未先赋值就使用", "注释符号写错", "变量名大小写不一致"], "keyPoints": ["理解 input() 的作用", "会使用 # 编写单行注释", "能给变量取清楚的名字"]}, {"id": 4, "module": 2, "title": "变量是信息小盒子", "duration": 15, "summary": "使用变量保存昵称、年龄和分数，并理解赋值。", "objectives": ["理解变量用于保存数据", "会使用 = 给变量赋值", "能读取并更新变量"], "sections": [{"title": "给信息贴上标签", "body": "变量像一个带名字的小盒子。<code>score = 10</code> 表示把数字 10 放进名为 score 的盒子。之后写 score，就能取出其中的数据。"}, {"title": "赋值不是数学等号", "body": "代码中的 <code>=</code> 表示把右边的结果保存到左边。<code>score = score + 5</code> 表示先取出旧分数，加 5，再保存回去。"}], "code": "name = \"小橙\"\nscore = 10\nscore = score + 5\nprint(name)\nprint(score)", "challenge": {"title": "制作成长分数", "instruction": "初始分数为 20，完成任务后增加 10 分，输出最终分数。", "starter": "score = 20\nscore = score + 10\nprint(score)", "expected": "30", "hints": ["先创建 score 变量。", "更新后再使用 print 输出。"]}, "quiz": {"id": "q4", "question": "执行 score = 6; score = score + 2 后，score 是多少？", "options": ["2", "6", "8", "62"], "answer": 2, "explain": "先取出 6，加 2 后再保存，因此结果是 8。"}, "video": {"topic": "变量与赋值", "url": "https://www.bilibili.com/video/BV1x14y1H7VM/?p=4", "title": "少儿 Python：变量", "source": "哔哩哔哩公开学习资源"}, "application": "变量适合保存分数、姓名、生命值和关卡编号，是后续所有项目的基础。", "mistakes": ["把 = 当成数学等号", "变量名以数字开头", "更新变量后忘记输出"], "keyPoints": ["理解变量用于保存数据", "会使用 = 给变量赋值", "能读取并更新变量"]}, {"id": 5, "module": 2, "title": "数字与四则运算", "duration": 17, "summary": "使用整数、浮点数和运算符完成计算。", "objectives": ["会使用 + - * / 完成运算", "知道 //、% 和 ** 的基本作用", "理解运算顺序"], "sections": [{"title": "常见运算符", "body": "加、减、乘、除分别是 <code>+</code>、<code>-</code>、<code>*</code>、<code>/</code>。<code>//</code> 取整除结果，<code>%</code> 取余数，<code>**</code> 表示乘方。"}, {"title": "用括号表达先后顺序", "body": "Python 先算乘除，再算加减。需要改变顺序时，应使用括号，例如 <code>(3 + 5) * 2</code>。"}], "code": "total = 12 + 8\naverage = total / 2\nprint(total)\nprint(average)", "challenge": {"title": "计算购买文具的总价", "instruction": "2支笔每支3元，1本笔记本8元，计算并输出总价。", "starter": "pen_price = 3\npen_count = 2\nbook_price = 8\ntotal = pen_price * pen_count + book_price\nprint(total)", "expected": "14", "hints": ["笔的费用是单价乘数量。", "再加上笔记本价格。"]}, "quiz": {"id": "q5", "question": "17 % 5 的结果是多少？", "options": ["2", "3", "5", "12"], "answer": 0, "explain": "17 除以 5 余 2，所以 17 % 5 等于 2。"}, "video": {"topic": "数字与运算符", "url": "https://www.bilibili.com/video/BV1x14y1H7VM/?p=6", "title": "少儿 Python：计算运算符", "source": "哔哩哔哩公开学习资源"}, "application": "运算符可用于购物结算、时间换算、平均分和游戏计分。", "mistakes": ["乘号写成 × 而不是 *", "整数除法与普通除法混淆", "忘记用括号改变运算顺序"], "keyPoints": ["会使用 + - * / 完成运算", "知道 //、% 和 ** 的基本作用", "理解运算顺序"]}, {"id": 6, "module": 2, "title": "字符串与文字处理", "duration": 18, "summary": "拼接、重复和截取字符串，制作个性化消息。", "objectives": ["会拼接和重复字符串", "知道 len() 可以统计长度", "了解字符串索引从 0 开始"], "sections": [{"title": "字符串可以组合", "body": "使用 <code>+</code> 连接文字，使用 <code>*</code> 重复文字。例如 <code>\"加油\" * 3</code> 会得到连续三次的“加油”。"}, {"title": "查看长度和单个字符", "body": "<code>len(text)</code> 返回字符数量。<code>text[0]</code> 获取第一个字符，因为 Python 的位置编号从 0 开始。"}], "code": "message = \"Python真有趣\"\nprint(len(message))\nprint(message[0])\nprint(\"加油！\" * 2)", "challenge": {"title": "制作欢迎横幅", "instruction": "把昵称和欢迎语连接起来，并输出欢迎语的字符数量。", "starter": "name = \"小橙\"\nbanner = \"欢迎你，\" + name + \"！\"\nprint(banner)\nprint(len(banner))", "expected": "欢迎你，小橙！\n7", "hints": ["使用 + 连接多个字符串。", "使用 len() 统计字符数量。"]}, "quiz": {"id": "q6", "question": "text = \"Python\"，text[0] 的结果是什么？", "options": ["P", "y", "Python", "0"], "answer": 0, "explain": "索引从 0 开始，因此 text[0] 是第一个字符 P。"}, "video": {"topic": "字符串基础", "url": "https://www.bilibili.com/video/BV1x14y1H7VM/?p=15", "title": "少儿 Python：字符串函数", "source": "哔哩哔哩公开学习资源"}, "application": "字符串处理可制作欢迎语、文本卡片、密码规则和简单的文字游戏。", "mistakes": ["字符串和数字直接用 + 相加", "索引起点误认为 1", "引号没有成对出现"], "keyPoints": ["会拼接和重复字符串", "知道 len() 可以统计长度", "了解字符串索引从 0 开始"]}, {"id": 7, "module": 3, "title": "比较与布尔值", "duration": 15, "summary": "使用比较运算得到 True 或 False。", "objectives": ["认识 True 和 False", "会使用 > < == !=", "能把多个条件与实际规则联系起来"], "sections": [{"title": "问题的答案只有真或假", "body": "布尔值只有 <code>True</code> 和 <code>False</code>。比较表达式会产生布尔值，例如 <code>8 > 5</code> 的结果为 True。"}, {"title": "注意 == 与 =", "body": "<code>=</code> 用于赋值，<code>==</code> 用于判断是否相等。<code>!=</code> 表示不相等。"}], "code": "age = 10\nprint(age >= 8)\nprint(age == 10)\nprint(age != 12)", "challenge": {"title": "判断是否达到挑战条件", "instruction": "分数达到 60 且剩余生命大于 0 时可继续。先分别输出两个比较结果。", "starter": "score = 75\nlives = 2\nprint(score >= 60)\nprint(lives > 0)", "expected": "True\nTrue", "hints": ["达到或超过使用 >=。", "大于使用 >。"]}, "quiz": {"id": "q7", "question": "下面哪个表达式会得到 False？", "options": ["5 < 8", "10 == 10", "7 != 7", "6 >= 3"], "answer": 2, "explain": "7 与 7 相等，所以“7 不等于 7”是 False。"}, "video": {"topic": "比较与逻辑运算", "url": "https://www.bilibili.com/video/BV1x14y1H7VM/?p=8", "title": "少儿 Python：关系运算符", "source": "哔哩哔哩公开学习资源"}, "application": "比较结果可以作为通关条件、年龄判断和成绩达标规则。", "mistakes": ["把 == 写成 =", "混淆 and 与 or", "忽略 True/False 的大小写"], "keyPoints": ["认识 True 和 False", "会使用 > < == !=", "能把多个条件与实际规则联系起来"]}, {"id": 8, "module": 3, "title": "if 条件判断", "duration": 18, "summary": "让程序只在条件成立时执行指定代码。", "objectives": ["会编写 if 语句", "理解冒号和缩进的作用", "能根据条件显示不同结果"], "sections": [{"title": "满足条件才执行", "body": "<code>if</code> 后面写条件，末尾加冒号。下一行向右缩进，表示这段代码属于 if。条件为 True 时才执行。"}, {"title": "缩进表示代码层级", "body": "Python 通常使用 4 个空格缩进。同一代码块中的语句应保持相同缩进，否则会产生错误。"}], "code": "score = 85\nif score >= 60:\n    print(\"挑战通过\")\nprint(\"检查结束\")", "challenge": {"title": "判断是否可以进入游戏", "instruction": "年龄达到 8 岁时输出“可以开始”，否则暂时不用处理。", "starter": "age = 10\nif age >= 8:\n    print(\"可以开始\")", "expected": "可以开始", "hints": ["if 条件后要写冒号。", "print 前面缩进 4 个空格。"]}, "quiz": {"id": "q8", "question": "if 语句的条件为 False 时会怎样？", "options": ["执行缩进代码块", "跳过缩进代码块", "程序一定关闭", "自动把条件改为 True"], "answer": 1, "explain": "条件不成立时，Python 会跳过属于 if 的缩进代码块。"}, "video": {"topic": "if 条件判断", "url": "https://www.bilibili.com/video/BV1wW411Y7ai/?p=7", "title": "莫烦 Python：if 条件", "source": "哔哩哔哩公开学习资源"}, "application": "if 能让程序只在满足条件时执行动作，例如发放奖励或显示提醒。", "mistakes": ["if 行末漏写冒号", "缩进不一致", "条件永远不可能成立"], "keyPoints": ["会编写 if 语句", "理解冒号和缩进的作用", "能根据条件显示不同结果"]}, {"id": 9, "module": 3, "title": "else 与多分支选择", "duration": 20, "summary": "使用 if、elif、else 处理多种情况。", "objectives": ["会使用 else 提供另一种结果", "会用 elif 处理多个条件", "能正确安排条件顺序"], "sections": [{"title": "二选一与多选一", "body": "<code>else</code> 表示前面的条件都不成立时执行。需要三个或更多结果时，可以在中间加入 <code>elif</code>。"}, {"title": "条件应从严格到宽松", "body": "判断分数等级时，应先判断更高分数。例如先写 >= 90，再写 >= 75，避免高分被前面的宽松条件提前匹配。"}], "code": "score = 82\nif score >= 90:\n    print(\"优秀\")\nelif score >= 75:\n    print(\"良好\")\nelse:\n    print(\"继续努力\")", "challenge": {"title": "制作温度提示器", "instruction": "温度大于等于30输出“炎热”，大于等于20输出“舒适”，否则输出“偏凉”。", "starter": "temperature = 26\nif temperature >= 30:\n    print(\"炎热\")\nelif temperature >= 20:\n    print(\"舒适\")\nelse:\n    print(\"偏凉\")", "expected": "舒适", "hints": ["先判断较高温度。", "最后用 else 处理其他情况。"]}, "quiz": {"id": "q9", "question": "多分支条件中，为什么通常把更严格的条件写在前面？", "options": ["让代码更长", "避免宽松条件提前匹配", "Python 只认识第一个数字", "为了使用更多变量"], "answer": 1, "explain": "条件从严格到宽松，可以避免本应属于高等级的数据被较低等级条件提前接收。"}, "video": {"topic": "if、elif 与 else", "url": "https://www.bilibili.com/video/BV1wW411Y7ai/?p=9", "title": "莫烦 Python：多分支条件", "source": "哔哩哔哩公开学习资源"}, "application": "多分支适合天气建议、成绩等级和角色状态判断。", "mistakes": ["条件顺序从宽松到严格", "elif 和 else 缩进错误", "遗漏兜底分支"], "keyPoints": ["会使用 else 提供另一种结果", "会用 elif 处理多个条件", "能正确安排条件顺序"]}, {"id": 10, "module": 4, "title": "for 循环与 range", "duration": 18, "summary": "使用 for 重复固定次数，并认识 range()。", "objectives": ["会使用 for 遍历一组数字", "理解 range 的起点和终点", "能生成规律输出"], "sections": [{"title": "把重复交给循环", "body": "需要连续执行相似操作时，不必重复复制代码。<code>for i in range(5)</code> 会让 i 依次取 0、1、2、3、4。"}, {"title": "range 不包含终点", "body": "<code>range(1, 6)</code> 生成 1 到 5，不包含 6。第三个参数可以设置步长，如 <code>range(2, 11, 2)</code>。"}], "code": "for number in range(1, 6):\n    print(number)", "challenge": {"title": "输出五颗星", "instruction": "使用 for 循环输出 1 到 5，并在每个数字后输出一颗星。", "starter": "for number in range(1, 6):\n    print(number, \"⭐\")", "expected": "1 ⭐\n2 ⭐\n3 ⭐\n4 ⭐\n5 ⭐", "hints": ["range(1, 6) 会生成 1 到 5。", "print 可以同时接收多个内容。"]}, "quiz": {"id": "q10", "question": "range(2, 7) 会生成哪些数字？", "options": ["2,3,4,5,6", "2,3,4,5,6,7", "0,1,2,3,4,5,6", "2,7"], "answer": 0, "explain": "range 包含起点 2，但不包含终点 7。"}, "video": {"topic": "for 循环", "url": "https://www.bilibili.com/video/BV1wW411Y7ai/?p=6", "title": "莫烦 Python：for 循环", "source": "哔哩哔哩公开学习资源"}, "application": "for 适合处理固定次数的重复任务，例如生成乘法表和逐项输出清单。", "mistakes": ["误以为 range 包含终点", "循环体没有缩进", "循环变量名称前后不一致"], "keyPoints": ["会使用 for 遍历一组数字", "理解 range 的起点和终点", "能生成规律输出"]}, {"id": 11, "module": 4, "title": "while 循环与计数器", "duration": 19, "summary": "使用 while 在条件成立时持续执行。", "objectives": ["会编写 while 循环", "知道更新计数器避免无限循环", "能选择 for 或 while"], "sections": [{"title": "条件成立就继续", "body": "<code>while</code> 会在条件为 True 时不断重复。适合“不确定要重复多少次，但知道停止条件”的任务。"}, {"title": "一定要让条件发生变化", "body": "循环体内应更新相关变量。若条件永远不变，程序会进入无限循环。在线实验室会在必要时终止过长运行。"}], "code": "count = 1\nwhile count <= 3:\n    print(\"第\", count, \"次练习\")\n    count = count + 1", "challenge": {"title": "倒计时", "instruction": "从 3 倒数到 1，最后输出“出发”。", "starter": "count = 3\nwhile count >= 1:\n    print(count)\n    count = count - 1\nprint(\"出发\")", "expected": "3\n2\n1\n出发", "hints": ["每轮让 count 减少 1。", "“出发”应写在循环外面。"]}, "quiz": {"id": "q11", "question": "while 循环中忘记更新计数器，最可能发生什么？", "options": ["自动变成 for 循环", "循环可能一直进行", "变量会被删除", "程序输出一定为空"], "answer": 1, "explain": "条件可能永远为 True，从而形成无限循环。"}, "video": {"topic": "while 循环", "url": "https://www.bilibili.com/video/BV1wW411Y7ai/?p=5", "title": "莫烦 Python：while 循环", "source": "哔哩哔哩公开学习资源"}, "application": "while 适合倒计时、重复询问和“直到完成”为止的任务。", "mistakes": ["忘记更新计数器导致无限循环", "停止条件写反", "循环外代码错误缩进"], "keyPoints": ["会编写 while 循环", "知道更新计数器避免无限循环", "能选择 for 或 while"]}, {"id": 12, "module": 4, "title": "循环中的累加与筛选", "duration": 22, "summary": "在循环中累加、判断和统计，解决更完整的问题。", "objectives": ["会在循环中累加总数", "能把 if 放进循环", "会统计满足条件的项目"], "sections": [{"title": "累加器从合适的初值开始", "body": "求和时通常先写 <code>total = 0</code>，每轮执行 <code>total = total + number</code>。循环结束后，total 保存最终结果。"}, {"title": "循环和条件可以组合", "body": "在循环内部加入 if，可以筛选出符合条件的数据。例如只累计偶数，或统计达到要求的分数数量。"}], "code": "total = 0\nfor number in range(1, 6):\n    total = total + number\nprint(total)", "challenge": {"title": "统计偶数总和", "instruction": "计算 1 到 10 中所有偶数的总和并输出。", "starter": "total = 0\nfor number in range(1, 11):\n    if number % 2 == 0:\n        total = total + number\nprint(total)", "expected": "30", "hints": ["偶数除以 2 的余数是 0。", "只在条件成立时累加。"]}, "quiz": {"id": "q12", "question": "求一组数字总和时，累加变量通常从多少开始？", "options": ["-1", "0", "1", "100"], "answer": 1, "explain": "0 不会改变加法结果，因此是最常用的求和初值。"}, "video": {"topic": "循环综合练习", "url": "https://www.bilibili.com/video/BV1sCyzBaEmF/?p=36", "title": "Python 入门：循环综合应用", "source": "哔哩哔哩公开学习资源"}, "application": "循环与条件组合后，可以统计、筛选和汇总一组数据。", "mistakes": ["累加器没有初始化", "if 放错缩进层级", "循环结束前就输出最终结果"], "keyPoints": ["会在循环中累加总数", "能把 if 放进循环", "会统计满足条件的项目"]}, {"id": 13, "module": 5, "title": "列表：把数据排成队伍", "duration": 20, "summary": "创建列表、读取元素并修改内容。", "objectives": ["会创建列表", "能使用索引读取元素", "会追加和修改列表内容"], "sections": [{"title": "列表保存多个有顺序的数据", "body": "列表使用方括号，例如 <code>names = [\"小橙\", \"小绿\"]</code>。每个元素都有位置编号，仍然从 0 开始。"}, {"title": "增加与修改", "body": "<code>append()</code> 可以在末尾加入新元素。通过索引赋值可以修改元素，例如 <code>names[0] = \"橙橙\"</code>。"}], "code": "fruits = [\"苹果\", \"橙子\", \"香蕉\"]\nfruits.append(\"葡萄\")\nprint(fruits[0])\nprint(len(fruits))", "challenge": {"title": "整理任务清单", "instruction": "创建三个任务，再追加“复习错题”，输出任务数量。", "starter": "tasks = [\"听讲解\", \"改代码\", \"做小测\"]\ntasks.append(\"复习错题\")\nprint(len(tasks))", "expected": "4", "hints": ["列表元素使用逗号分隔。", "append 会在末尾追加元素。"]}, "quiz": {"id": "q13", "question": "items = [\"a\", \"b\", \"c\"]，items[1] 是什么？", "options": ["a", "b", "c", "1"], "answer": 1, "explain": "索引从 0 开始，所以索引 1 对应第二个元素 b。"}, "video": {"topic": "列表基础", "url": "https://www.bilibili.com/video/BV1wW411Y7ai/?p=22", "title": "莫烦 Python：列表", "source": "哔哩哔哩公开学习资源"}, "application": "列表适合保存任务、成绩和物品，让一组数据按顺序管理。", "mistakes": ["索引越界", "append 后没有保存或查看", "把列表和字符串混淆"], "keyPoints": ["会创建列表", "能使用索引读取元素", "会追加和修改列表内容"]}, {"id": 14, "module": 5, "title": "字典：用名称查找信息", "duration": 21, "summary": "使用键值对保存人物或物品信息。", "objectives": ["理解键和值的关系", "会读取和修改字典", "能遍历字典中的内容"], "sections": [{"title": "键就像信息标签", "body": "字典使用大括号保存键值对，例如 <code>{\"name\": \"小橙\", \"score\": 90}</code>。通过键可以快速找到对应值。"}, {"title": "键应具有明确含义", "body": "相比用位置编号，键可以直接说明数据含义。修改时写 <code>student[\"score\"] = 95</code>。"}], "code": "student = {\"name\": \"小橙\", \"score\": 90}\nstudent[\"score\"] = 95\nprint(student[\"name\"])\nprint(student[\"score\"])", "challenge": {"title": "制作角色卡片", "instruction": "创建包含角色名、生命值和等级的字典，然后输出角色名和等级。", "starter": "hero = {\"name\": \"橙子侠\", \"hp\": 100, \"level\": 1}\nprint(hero[\"name\"])\nprint(hero[\"level\"])", "expected": "橙子侠\n1", "hints": ["每项由键和值组成。", "读取时使用 字典[键]。"]}, "quiz": {"id": "q14", "question": "字典中的“键”主要用于什么？", "options": ["给数据提供查找标签", "决定文字颜色", "自动计算总和", "删除整个程序"], "answer": 0, "explain": "键是数据的名称标签，用来找到对应的值。"}, "video": {"topic": "字典基础", "url": "https://www.bilibili.com/video/BV1wW411Y7ai/?p=24", "title": "莫烦 Python：字典", "source": "哔哩哔哩公开学习资源"}, "application": "字典适合用名称查找信息，例如角色属性、学生资料和商品信息。", "mistakes": ["键名没有引号", "访问不存在的键", "混淆键和值"], "keyPoints": ["理解键和值的关系", "会读取和修改字典", "能遍历字典中的内容"]}, {"id": 15, "module": 5, "title": "组合处理一组数据", "duration": 23, "summary": "遍历列表、统计数据并生成学习报告。", "objectives": ["会遍历列表元素", "能求和和计算平均值", "会组合列表、循环与条件"], "sections": [{"title": "直接遍历元素", "body": "<code>for score in scores</code> 会让 score 依次取得列表中的每个值。这样比使用大量索引更清楚。"}, {"title": "从数据得到信息", "body": "可以累计总分，再用 <code>len()</code> 获取人数并计算平均值；也可以用 if 统计达到目标的次数。"}], "code": "scores = [80, 92, 76, 88]\ntotal = 0\nfor score in scores:\n    total = total + score\naverage = total / len(scores)\nprint(average)", "challenge": {"title": "统计达标人数", "instruction": "统计列表中大于等于80分的人数。", "starter": "scores = [80, 65, 92, 77, 88]\ncount = 0\nfor score in scores:\n    if score >= 80:\n        count = count + 1\nprint(count)", "expected": "3", "hints": ["先让 count 从 0 开始。", "只有 score >= 80 时才增加。"]}, "quiz": {"id": "q15", "question": "遍历列表 scores 中的每个分数，哪种写法最合适？", "options": ["for score in scores:", "if score in scores:", "while scores = score:", "print for scores:"], "answer": 0, "explain": "for 元素 in 列表 是遍历列表的标准写法。"}, "video": {"topic": "列表遍历与统计", "url": "https://www.bilibili.com/video/BV1x14y1H7VM/?p=18", "title": "少儿 Python：列表应用", "source": "哔哩哔哩公开学习资源"}, "application": "把列表、条件和循环结合起来，就能制作成绩分析和数据报告。", "mistakes": ["统计变量没有从 0 开始", "平均数分母写错", "筛选条件写反"], "keyPoints": ["会遍历列表元素", "能求和和计算平均值", "会组合列表、循环与条件"]}, {"id": 16, "module": 6, "title": "函数：给一组步骤命名", "duration": 22, "summary": "定义并调用函数，让代码更清楚、更容易复用。", "objectives": ["会使用 def 定义函数", "会调用函数", "理解函数用于封装重复步骤"], "sections": [{"title": "函数是可重复使用的小工具", "body": "使用 <code>def</code> 定义函数，函数体需要缩进。定义只是在制作工具，之后还要写函数名加括号来调用。"}, {"title": "好的函数只负责一件事", "body": "函数名称应能说明用途，例如 <code>show_welcome()</code>。把一个大任务拆成多个小函数，代码更容易检查。"}], "code": "def show_welcome():\n    print(\"欢迎来到编程挑战\")\n    print(\"准备开始\")\n\nshow_welcome()", "challenge": {"title": "定义鼓励函数", "instruction": "定义函数 cheer()，输出两行鼓励语，然后调用它。", "starter": "def cheer():\n    print(\"你正在进步\")\n    print(\"继续完成下一步\")\n\ncheer()", "expected": "你正在进步\n继续完成下一步", "hints": ["def 函数名(): 后面要有冒号。", "调用时写 cheer()。"]}, "quiz": {"id": "q16", "question": "定义函数后，怎样让函数中的代码真正执行？", "options": ["删除函数名", "调用函数", "把 def 改成 if", "只写注释"], "answer": 1, "explain": "定义函数只是创建工具，需要调用函数才会执行。"}, "video": {"topic": "函数基础", "url": "https://www.bilibili.com/video/BV1wW411Y7ai/?p=10", "title": "莫烦 Python：def 函数", "source": "哔哩哔哩公开学习资源"}, "application": "函数可以把经常使用的步骤封装起来，让程序更清楚、更容易修改。", "mistakes": ["定义函数后忘记调用", "函数体没有缩进", "函数名与变量名冲突"], "keyPoints": ["会使用 def 定义函数", "会调用函数", "理解函数用于封装重复步骤"]}, {"id": 17, "module": 6, "title": "参数与返回值", "duration": 24, "summary": "让函数接收信息并返回计算结果。", "objectives": ["理解参数是函数接收的信息", "会使用 return 返回结果", "能把函数结果保存到变量"], "sections": [{"title": "参数让函数更灵活", "body": "<code>def greet(name)</code> 中的 name 是参数。调用 <code>greet(\"小橙\")</code> 时，字符串会传入函数。"}, {"title": "return 把结果交回外部", "body": "<code>return</code> 会结束函数并返回结果。外部可以把结果保存到变量，继续参与其他计算。"}], "code": "def add(a, b):\n    return a + b\n\nresult = add(6, 4)\nprint(result)", "challenge": {"title": "制作等级计算器", "instruction": "定义函数 next_level(level)，返回 level + 1，并输出从2级升级后的结果。", "starter": "def next_level(level):\n    return level + 1\n\nresult = next_level(2)\nprint(result)", "expected": "3", "hints": ["参数写在函数名后的括号里。", "使用 return 返回新等级。"]}, "quiz": {"id": "q17", "question": "return 的主要作用是什么？", "options": ["把结果返回给函数外部", "重复执行函数", "创建注释", "改变代码颜色"], "answer": 0, "explain": "return 将函数计算出的结果交给调用位置。"}, "video": {"topic": "参数与返回值", "url": "https://www.bilibili.com/video/BV1wW411Y7ai/?p=11", "title": "莫烦 Python：函数参数", "source": "哔哩哔哩公开学习资源"}, "application": "参数让函数处理不同输入，返回值让结果能继续参与后续计算。", "mistakes": ["调用参数数量不匹配", "把 print 当作 return", "返回后仍期待后续语句执行"], "keyPoints": ["理解参数是函数接收的信息", "会使用 return 返回结果", "能把函数结果保存到变量"]}, {"id": 18, "module": 6, "title": "综合项目：知识问答游戏", "duration": 30, "summary": "综合变量、条件、列表、循环和函数，完成一个小型问答项目。", "objectives": ["能把大任务拆成多个步骤", "会组合前面学过的知识", "能测试并改进自己的程序"], "sections": [{"title": "先设计数据和流程", "body": "项目可以先拆成：准备问题、展示题目、检查答案、累计分数、输出结果。每一步都可以对应一种已学知识。"}, {"title": "从可运行的小版本开始", "body": "先完成一道固定题，再扩展为列表和循环。每增加一个功能就运行一次，能更快找到错误。"}], "code": "def check_answer(answer):\n    if answer == \"print\":\n        return 1\n    return 0\n\nscore = check_answer(\"print\")\nprint(\"得分：\", score)", "challenge": {"title": "完成三题计分器", "instruction": "遍历 answers 列表，答案等于“Python”时加1分，最后输出总分。", "starter": "answers = [\"Python\", \"Java\", \"Python\"]\nscore = 0\nfor answer in answers:\n    if answer == \"Python\":\n        score = score + 1\nprint(score)", "expected": "2", "hints": ["score 初始为 0。", "在循环内部用 if 检查答案。"]}, "quiz": {"id": "q18", "question": "开发综合项目时，哪种做法更可靠？", "options": ["一次写完所有功能再运行", "从小版本开始，每增加一步就测试", "只复制别人的代码不运行", "遇到错误立即删除项目"], "answer": 1, "explain": "分步骤实现并频繁测试，可以更快定位问题并持续改进。"}, "video": {"topic": "综合项目思路", "url": "https://www.bilibili.com/video/BV1o4411M71o/?p=100", "title": "黑马程序员：Python 综合练习", "source": "哔哩哔哩公开学习资源"}, "application": "综合项目会把输入、条件、循环、列表和函数组合成一个完整作品。", "mistakes": ["一次写太多功能难以检查", "没有先设计输入和输出", "缺少分步测试"], "keyPoints": ["能把大任务拆成多个步骤", "会组合前面学过的知识", "能测试并改进自己的程序"]}], "codeTasks": [{"id": "t1", "lesson": 2, "title": "自我介绍生成器", "level": "入门", "instruction": "输出昵称、年龄和一个兴趣，每项一行。", "starter": "name = \"小橙\"\nage = 10\nhobby = \"画画\"\nprint(\"昵称：\" + name)\nprint(\"年龄：\", age)\nprint(\"兴趣：\" + hobby)", "expected": "昵称：小橙\n年龄： 10\n兴趣：画画", "hints": ["字符串与字符串可以使用 +。", "数字可作为 print 的另一个参数。"]}, {"id": "t2", "lesson": 5, "title": "文具价格计算器", "level": "入门", "instruction": "计算3支笔和2本练习册的总价格。", "starter": "pen_price = 3\nbook_price = 6\ntotal = pen_price * 3 + book_price * 2\nprint(total)", "expected": "21", "hints": ["分别计算两类物品的费用。", "最后相加。"]}, {"id": "t3", "lesson": 8, "title": "通关判断", "level": "核心", "instruction": "分数达到60且生命值大于0时输出“通关”。", "starter": "score = 75\nlives = 2\nif score >= 60 and lives > 0:\n    print(\"通关\")\nelse:\n    print(\"继续挑战\")", "expected": "通关", "hints": ["两个条件同时成立使用 and。", "记得缩进。"]}, {"id": "t4", "lesson": 10, "title": "乘法表一行", "level": "核心", "instruction": "输出7乘1到7乘5的结果。", "starter": "for number in range(1, 6):\n    print(7, \"x\", number, \"=\", 7 * number)", "expected": "7 x 1 = 7\n7 x 2 = 14\n7 x 3 = 21\n7 x 4 = 28\n7 x 5 = 35", "hints": ["range(1, 6) 生成1到5。", "在循环中计算 7 * number。"]}, {"id": "t5", "lesson": 12, "title": "偶数统计器", "level": "核心", "instruction": "统计1到20中偶数的数量。", "starter": "count = 0\nfor number in range(1, 21):\n    if number % 2 == 0:\n        count = count + 1\nprint(count)", "expected": "10", "hints": ["偶数对2取余为0。", "满足条件时计数加1。"]}, {"id": "t6", "lesson": 13, "title": "任务清单", "level": "进阶", "instruction": "向任务列表追加一项，并逐行输出所有任务。", "starter": "tasks = [\"学习\", \"练习\"]\ntasks.append(\"复习\")\nfor task in tasks:\n    print(task)", "expected": "学习\n练习\n复习", "hints": ["使用 append 添加元素。", "使用 for 遍历列表。"]}, {"id": "t7", "lesson": 17, "title": "面积函数", "level": "进阶", "instruction": "定义 rectangle_area(width, height)，返回矩形面积。", "starter": "def rectangle_area(width, height):\n    return width * height\n\nprint(rectangle_area(4, 3))", "expected": "12", "hints": ["面积等于宽乘高。", "使用 return 返回结果。"]}, {"id": "t8", "lesson": 18, "title": "成绩报告", "level": "综合", "instruction": "计算成绩列表平均分，并统计达标人数。", "starter": "scores = [90, 76, 85, 62]\ntotal = 0\npassed = 0\nfor score in scores:\n    total = total + score\n    if score >= 70:\n        passed = passed + 1\nprint(total / len(scores))\nprint(passed)", "expected": "78.25\n3", "hints": ["平均分是总分除以人数。", "在循环中统计大于等于70的分数。"]}]};</script>
+<script>
+(() => {
+const D=window.APP_DATA, LESSONS=D.lessons, MODULES=D.modules, TASKS=D.codeTasks;
+const $=id=>document.getElementById(id), $$=s=>Array.from(document.querySelectorAll(s));
+const state={mode:'local',token:localStorage.getItem('orange_v6_token')||'',user:null,completed:[],quizDone:[],wrong:[],codePassed:[],streak:0,xp:0,currentLesson:null,practice:null,practiceIndex:0,practiceScore:0,activeTask:TASKS[0],hintIndex:0,pyodide:null,pyLoading:null,lessonSteps:{}};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200)}
+function today(){return new Date().toISOString().slice(0,10)}
+async function detectMode(){if(location.protocol==='file:')return;try{const c=new AbortController();setTimeout(()=>c.abort(),1200);const r=await fetch('/health',{signal:c.signal,cache:'no-store'});if(!r.ok)return;const body=await r.json();if(body&&body.app==='orange-sprout-v7')state.mode='api'}catch(e){state.mode='local'}}
+function localUsers(){try{return JSON.parse(localStorage.getItem('orange_v6_users')||'[]')}catch(e){return []}}function saveUsers(v){localStorage.setItem('orange_v6_users',JSON.stringify(v))}
+function hashLocal(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
+function localSessionUser(){const name=localStorage.getItem('orange_v6_current');return localUsers().find(u=>u.username===name)||null}
+function calcLocal(u){const acts=[...new Set(u.activities||[])].sort();let streak=0,d=new Date();for(let i=0;i<365;i++){const ds=d.toISOString().slice(0,10);if(acts.includes(ds)){streak++;d.setDate(d.getDate()-1)}else if(i===0){d.setDate(d.getDate()-1)}else break}const quizUnique=[...new Set((u.quizAttempts||[]).filter(x=>x.correct).map(x=>x.questionId))];const codeUnique=[...new Set((u.codeSubmissions||[]).filter(x=>x.passed).map(x=>x.taskId))];return {user:{nickname:u.nickname,username:u.username,ageGroup:u.ageGroup},completed:u.completed||[],quizDone:quizUnique,wrong:u.wrong||[],codePassed:codeUnique,lessonSteps:u.lessonSteps||{},streak,xp:(u.completed||[]).length*20+quizUnique.length*5+codeUnique.length*10}}
+async function request(path,opt={}){if(state.mode==='api'){const r=await fetch(path,{...opt,headers:{'Content-Type':'application/json',...(state.token?{Authorization:'Bearer '+state.token}:{}),...(opt.headers||{})}});let body={};try{body=await r.json()}catch(e){}if(!r.ok)throw new Error(body.detail||'请求失败');return body}throw new Error('local')}
+
+function normalizeAccount(value){return String(value||'').trim()}
+async function register(payload){payload={...payload,account:normalizeAccount(payload.account)};if(state.mode==='api')return request('/api/register',{method:'POST',body:JSON.stringify(payload)});const users=localUsers();if(users.some(u=>normalizeAccount(u.username)===payload.account))throw new Error('学习账号已经存在');const row={nickname:payload.account,username:payload.account,ageGroup:payload.age_group,passwordHash:hashLocal(payload.password),completed:[],quizAttempts:[],wrong:[],codeSubmissions:[],activities:[],lessonSteps:{},createdAt:new Date().toISOString()};users.push(row);saveUsers(users);return {ok:true,account:row.username}}
+async function login(payload){payload={...payload,account:normalizeAccount(payload.account)};if(state.mode==='api')return request('/api/login',{method:'POST',body:JSON.stringify(payload)});const u=localUsers().find(x=>normalizeAccount(x.username)===payload.account&&x.passwordHash===hashLocal(payload.password));if(!u)throw new Error('学习账号或密码错误');localStorage.setItem('orange_v6_current',u.username);return {token:'local-'+u.username}}
+async function loadMe(){if(state.mode==='api')return request('/api/me');const u=localSessionUser();if(!u)throw new Error('请先登录');return calcLocal(u)}
+async function mutateLocal(fn){const users=localUsers(),i=users.findIndex(u=>u.username===state.user.username);if(i<0)throw new Error('账号状态异常');fn(users[i]);users[i].activities=Array.from(new Set([...(users[i].activities||[]),today()]));saveUsers(users);return calcLocal(users[i])}
+async function completeLesson(id){if(state.mode==='api')return request('/api/progress/'+id+'/complete',{method:'POST'});return mutateLocal(u=>{u.completed=Array.from(new Set([...(u.completed||[]),id])).sort((a,b)=>a-b);u.lessonSteps={...(u.lessonSteps||{}),[id]:5}})}
+async function saveLessonStep(id,step){step=Math.max(1,Math.min(5,Number(step)||1));if(state.mode==='api')return request('/api/progress/'+id+'/step',{method:'POST',body:JSON.stringify({step})});return mutateLocal(u=>{u.lessonSteps={...(u.lessonSteps||{}),[id]:Math.max(Number((u.lessonSteps||{})[id]||0),step)}})}
+async function saveQuiz(q,correct,selected){if(state.mode==='api')return request('/api/quiz-attempts',{method:'POST',body:JSON.stringify({question_id:q.id,module_id:LESSONS.find(l=>l.quiz.id===q.id)?.module||0,correct,selected})});return mutateLocal(u=>{u.quizAttempts=[...(u.quizAttempts||[]),{questionId:q.id,correct,selected,at:new Date().toISOString()}];if(correct)u.wrong=(u.wrong||[]).filter(x=>x!==q.id);else u.wrong=Array.from(new Set([...(u.wrong||[]),q.id]))})}
+async function saveCode(task,passed,code,output){if(state.mode==='api')return request('/api/code-submissions',{method:'POST',body:JSON.stringify({task_id:task.id,lesson_id:task.lesson,passed,code,output})});return mutateLocal(u=>{u.codeSubmissions=[...(u.codeSubmissions||[]),{taskId:task.id,passed,code,output,at:new Date().toISOString()}]})}
+function applyMe(me){state.user=me.user;state.completed=me.completed||[];state.quizDone=me.quizDone||[];state.wrong=me.wrong||[];state.codePassed=me.codePassed||[];state.lessonSteps=me.lessonSteps||{};state.streak=me.streak||0;state.xp=me.xp||0;renderAll()}
+async function enterApp(){const me=await loadMe();applyMe(me);$('auth').classList.add('hidden');$('app').classList.remove('hidden');showView('home');updateAssistantStatus()}
+function unlocked(id){return id===1||state.completed.includes(id-1)||state.completed.includes(id)}
+function nextLesson(){return LESSONS.find(l=>!state.completed.includes(l.id))||LESSONS[LESSONS.length-1]}
+function renderAll(){const n=state.completed.length,p=Math.round(n/LESSONS.length*100),level=1+Math.floor(state.xp/100);$('navNickname').textContent=state.user.nickname;$('navLevel').textContent='等级 '+level;$('avatar').textContent=state.user.nickname.slice(0,1);$('helloText').textContent=state.user.nickname+'，今天继续成长';const nx=nextLesson();$('nextLessonTitle').textContent=state.completed.length===LESSONS.length?'全部课程已完成':'第'+nx.id+'课 '+nx.title;$('nextLessonSummary').textContent=state.completed.length===LESSONS.length?'可以前往练习中心复习错题，或在代码实验室完成综合挑战。':nx.summary;$('homeProgress').style.width=p+'%';$('homeProgressText').textContent=`已完成 ${n} / ${LESSONS.length}`;$('statLessons').textContent=n;$('statQuiz').textContent=state.quizDone.length;$('statCode').textContent=state.codePassed.length;$('statStreak').textContent=state.streak;$('overallPercent').textContent=p+'%';$('overallText').textContent=`已完成 ${n} / ${LESSONS.length}`;$('overallRing').style.background=`conic-gradient(var(--orange) ${p*3.6}deg,var(--line) 0deg)`;renderHomeModule();renderModules();renderWrong();renderTasks();renderProfile()}
+function renderHomeModule(){const nx=nextLesson(),m=MODULES.find(x=>x.id===nx.module),ls=LESSONS.filter(l=>l.module===m.id);$('homeModuleText').textContent=m.title+'：'+m.subtitle;$('homeModule').innerHTML=`<div class="module-head" style="padding:0;background:none"><div class="module-icon">${m.icon}</div><div><h3>${m.title}</h3><p>${m.subtitle}</p></div><div class="module-score">${ls.filter(l=>state.completed.includes(l.id)).length} / ${ls.length} 节</div></div><div class="lesson-list" style="padding:16px 0 0">${ls.map(lessonCard).join('')}</div>`;bindLessonCards($('homeModule'))}
+function lessonCard(l){const done=state.completed.includes(l.id),lock=!unlocked(l.id);return `<article class="lesson-card ${done?'done':''} ${lock?'locked':''}" data-lesson="${l.id}"><div class="lesson-top"><span class="lesson-no">${done?'✓':l.id}</span><span class="tag ${done?'':'orange'}">${done?'已完成':lock?'待解锁':l.duration+'分钟'}</span></div><h4>${esc(l.title)}</h4><p>${esc(l.summary)}</p><small>${lock?'先完成上一课':'点击进入课程'}</small></article>`}
+function bindLessonCards(root=document){root.querySelectorAll('[data-lesson]').forEach(e=>e.onclick=()=>{const id=Number(e.dataset.lesson);if(!unlocked(id))return toast('请先完成上一课');openLesson(id)})}
+function renderModules(){$('moduleList').innerHTML=MODULES.map(m=>{const ls=LESSONS.filter(l=>l.module===m.id),done=ls.filter(l=>state.completed.includes(l.id)).length;return `<section class="module-card"><div class="module-head"><div class="module-icon">${m.icon}</div><div><h3>模块 ${m.id} · ${m.title}</h3><p>${m.subtitle}</p></div><div class="module-score">${done} / ${ls.length} 完成</div></div><div class="lesson-list">${ls.map(lessonCard).join('')}</div></section>`}).join('');bindLessonCards($('moduleList'))}
+function showView(v){$$('.view').forEach(x=>x.classList.remove('active'));$('view-'+v).classList.add('active');$$('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));window.scrollTo({top:0,behavior:'smooth'})}
+
+const LESSON_PROGRESS_LABELS={0:'尚未开始',1:'已进入本课',2:'已阅读讲解与示例',3:'已进入代码实践',4:'本课小测已通过',5:'本课已完成'};
+function lessonStepOf(id){if(state.completed.includes(id))return 5;return Math.max(0,Number(state.lessonSteps?.[id]||0))}
+function updateLessonProgressUI(step){step=Math.max(0,Math.min(5,Number(step)||0));const percent=step*20,bar=$('lessonProgressBar'),label=$('lessonProgressLabel'),percentText=$('lessonProgressPercent');if(bar)bar.style.width=percent+'%';if(label)label.textContent=LESSON_PROGRESS_LABELS[step];if(percentText)percentText.textContent=percent+'%';for(let i=1;i<=4;i++){const node=$('lessonFlow'+i);if(!node)continue;node.classList.toggle('stage-done',step>i||step===5);node.classList.toggle('stage-current',step===i)}}
+async function recordLessonStep(id,step){const old=lessonStepOf(id);if(step<=old){updateLessonProgressUI(old);return}try{const me=await saveLessonStep(id,step);applyMe(me);updateLessonProgressUI(Math.max(step,lessonStepOf(id)))}catch(e){updateLessonProgressUI(step)}}
+function openLesson(id){
+ const l=LESSONS.find(x=>x.id===id);if(!l||!unlocked(id))return;
+ state.currentLesson=id;
+ const done=state.completed.includes(id),module=MODULES.find(m=>m.id===l.module),next=LESSONS.find(x=>x.id===id+1),savedStep=done?5:lessonStepOf(id);
+ $('lessonPage').innerHTML=`<div class="lesson-page"><aside class="panel lesson-nav"><button class="back-link" id="backPath">← 返回学习路径</button><span class="tag orange">第 ${l.id} 课 · ${l.duration}分钟</span><h3 style="margin-top:14px">本课目标</h3>${l.objectives.map(x=>`<div class="objective">${x}</div>`).join('')}<div class="lesson-progress-wrap"><div class="progress"><i id="lessonProgressBar" style="width:${savedStep*20}%"></i></div><div class="lesson-progress-meta"><span id="lessonProgressLabel">${LESSON_PROGRESS_LABELS[savedStep]}</span><strong id="lessonProgressPercent">${savedStep*20}%</strong></div></div></aside><article class="panel lesson-content"><header class="lesson-hero"><div class="lesson-kicker"><span class="tag orange">${module.icon} ${module.title}</span><span class="tag">预计 ${l.duration} 分钟</span></div><h1>${esc(l.title)}</h1><p class="lesson-summary">${esc(l.summary)}</p><div class="lesson-flow"><div class="flow-item" id="lessonFlow1"><b>01 理解</b><span>阅读核心概念</span></div><div class="flow-item" id="lessonFlow2"><b>02 观察</b><span>阅读并预测示例</span></div><div class="flow-item" id="lessonFlow3"><b>03 实践</b><span>进入实验室运行代码</span></div><div class="flow-item" id="lessonFlow4"><b>04 检查</b><span>通过本课小测</span></div></div><div class="knowledge-strip">${l.keyPoints.map((x,i)=>`<div class="knowledge-point"><i>${i+1}</i><span>${esc(x)}</span></div>`).join('')}</div></header>${l.sections.map(s=>`<section class="content-section"><h2>${s.title}</h2><p>${s.body}</p></section>`).join('')}<section class="content-section"><h2>它能用在哪里</h2><div class="application-line"><div class="application-visual">💡</div><div><b>把知识放进真实任务</b><p>${esc(l.application)}</p></div></div></section><section class="content-section"><h2>常见错误与检查方法</h2><div class="mistake-list">${l.mistakes.map(x=>`<div class="mistake-item">${esc(x)}</div>`).join('')}</div></section><section class="content-section" id="lessonExampleSection"><h2>示例代码</h2><pre class="code-sample">${esc(l.code)}</pre><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn" id="sendToLab">发送到代码实验室</button><span class="runtime-badge">阅读到这里后，本课进度会自动更新</span></div></section><section class="content-section"><div class="video-resource"><div class="video-thumb">▶</div><div><span class="tag orange">配套视频</span><h3>${esc(l.video.title)}</h3><p>${esc(l.video.topic)} · ${esc(l.video.source)}</p></div><a class="btn" id="lessonVideoLink" href="${l.video.url}" target="_blank" rel="noopener noreferrer">观看视频</a></div></section><section class="content-section"><div class="challenge"><h3>动手挑战：${esc(l.challenge.title)}</h3><p>${esc(l.challenge.instruction)}</p><button class="btn green" id="challengeLab">在实验室练习</button></div></section><section class="content-section"><h2>本课小测</h2><div class="quiz-box"><b>${esc(l.quiz.question)}</b><div class="options">${l.quiz.options.map((o,i)=>`<label class="option"><input type="radio" name="lessonQuiz" value="${i}"><span>${esc(o)}</span></label>`).join('')}</div><button class="btn primary" id="checkLessonQuiz">提交答案</button><div id="lessonQuizFeedback" class="quiz-feedback"></div></div></section><section class="content-section lesson-footer-actions"><div><h2 style="margin:0">${done?'继续学习':'完成本课'}</h2><p class="muted">${done?(next?'前往下一课继续学习。':'全部课程已经完成。'):'答对小测后保存进度，并自动进入下一课。'}</p><div class="auto-next-note">完成后将在 1 秒内自动跳转。</div></div><button class="btn ${done?'green':'primary'}" id="completeLessonBtn">${done?(next?'进入下一课':'查看我的学习'):'完成本课并进入下一课'}</button></section></article></div>`;
+ showView('lesson');updateLessonProgressUI(savedStep);
+ let quizPassed=done||state.quizDone.includes(l.quiz.id);
+ $('backPath').onclick=()=>showView('path');
+ const enterLab=(code)=>{recordLessonStep(l.id,3);openLabForLesson(l.id,code)};
+ $('sendToLab').onclick=()=>enterLab(l.code);
+ $('challengeLab').onclick=()=>enterLab(l.challenge.starter);
+ $('lessonVideoLink').onclick=()=>recordLessonStep(l.id,3);
+ const example=$('lessonExampleSection');
+ if(example&&'IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting&&e.intersectionRatio>.25)){recordLessonStep(l.id,2);observer.disconnect()}},{threshold:[.25,.5]});observer.observe(example)}
+ $('checkLessonQuiz').onclick=async()=>{const picked=document.querySelector('input[name=lessonQuiz]:checked');if(!picked)return toast('请选择一个答案');const correct=Number(picked.value)===l.quiz.answer;const f=$('lessonQuizFeedback');f.className='quiz-feedback '+(correct?'ok':'bad');f.textContent=(correct?'回答正确。':'回答错误。')+l.quiz.explain;try{const me=await saveQuiz(l.quiz,correct,Number(picked.value));applyMe(me)}catch(e){}quizPassed=correct;if(correct)await recordLessonStep(l.id,4)};
+ $('completeLessonBtn').onclick=async()=>{if(done){if(next)openLesson(next.id);else showView('profile');return}if(!quizPassed)return toast('请先答对本课小测');try{const me=await completeLesson(l.id);applyMe(me);updateLessonProgressUI(5);toast(next?'本课完成，正在进入下一课':'恭喜完成全部课程');setTimeout(()=>{if(next)openLesson(next.id);else showView('profile')},900)}catch(e){toast(e.message)}};
+ setTimeout(()=>recordLessonStep(l.id,1),100);
+}
+function openLabForLesson(lessonId,code){const task=TASKS.find(t=>t.lesson===lessonId)||TASKS[0];state.activeTask=task;renderTasks();$('codeEditor').value=code||task.starter;$('codeOutput').textContent='运行结果会显示在这里。';showView('lab')}
+function renderWrong(){if(!state.wrong.length){$('wrongList').innerHTML='<div class="empty">目前没有错题记录。</div>';return}$('wrongList').innerHTML=state.wrong.map(id=>{const l=LESSONS.find(x=>x.quiz.id===id);return l?`<div class="wrong-item"><b>${esc(l.quiz.question)}</b><span>来自第 ${l.id} 课 · ${esc(l.title)}</span></div>`:''}).join('')}
+function startPractice(){const available=LESSONS.filter(l=>unlocked(l.id));const pool=available.map(l=>l.quiz);state.practice=pool.sort(()=>Math.random()-.5).slice(0,Math.min(6,pool.length));state.practiceIndex=0;state.practiceScore=0;renderPracticeQuestion()}
+function renderPracticeQuestion(){if(!state.practice||state.practiceIndex>=state.practice.length){$('practiceCard').innerHTML=`<h3>练习完成</h3><p class="muted">本次答对 ${state.practiceScore} / ${state.practice.length}。错题已记录，可以再次练习。</p><button class="btn primary" id="againPractice">再练一次</button>`;$('againPractice').onclick=startPractice;return}const q=state.practice[state.practiceIndex];$('practiceCard').innerHTML=`<span class="tag orange">第 ${state.practiceIndex+1} / ${state.practice.length} 题</span><h3>${esc(q.question)}</h3><div class="options">${q.options.map((o,i)=>`<label class="option"><input type="radio" name="practiceOption" value="${i}"><span>${esc(o)}</span></label>`).join('')}</div><div id="practiceFeedback" class="quiz-feedback"></div><div class="practice-actions"><span class="muted">已答对 ${state.practiceScore} 题</span><button id="submitPractice" class="btn primary">提交答案</button></div>`;$('submitPractice').onclick=async()=>{const p=document.querySelector('input[name=practiceOption]:checked');if(!p)return toast('请选择一个答案');const correct=Number(p.value)===q.answer,f=$('practiceFeedback');f.className='quiz-feedback '+(correct?'ok':'bad');f.textContent=(correct?'回答正确。':'回答错误。')+q.explain;if(correct)state.practiceScore++;try{const me=await saveQuiz(q,correct,Number(p.value));applyMe(me)}catch(e){}$('submitPractice').textContent='下一题';$('submitPractice').onclick=()=>{state.practiceIndex++;renderPracticeQuestion()}}}
+function renderTasks(){$('taskList').innerHTML=TASKS.map((t,index)=>`<button class="task-btn ${t.id===state.activeTask.id?'active':''}" data-task="${t.id}"><b><span class="task-seq">任务 ${index+1}</span>${esc(t.title)}</b><span>对应第 ${t.lesson} 课 · ${t.level} ${state.codePassed.includes(t.id)?'· 已通过':''}</span></button>`).join('');$$('[data-task]').forEach(b=>b.onclick=()=>{state.activeTask=TASKS.find(t=>t.id===b.dataset.task);state.hintIndex=0;renderTasks();loadTask(true)});const t=state.activeTask,index=TASKS.findIndex(x=>x.id===t.id);$('taskLevel').textContent=`任务 ${index+1} · ${t.level}`;$('taskTitle').textContent=t.title;$('taskInstruction').textContent=t.instruction;if(!$('codeEditor').value)loadTask(true)}
+function loadTask(setCode=true){const t=state.activeTask,index=TASKS.findIndex(x=>x.id===t.id);$('taskLevel').textContent=`任务 ${index+1} · ${t.level}`;$('taskTitle').textContent=t.title;$('taskInstruction').textContent=t.instruction;$('labOpenLessonBtn').textContent=`进入第 ${t.lesson} 课`;$('resultOpenLessonBtn').textContent=`进入第 ${t.lesson} 课`;if(setCode)$('codeEditor').value=t.starter;$('hintBox').classList.add('hidden');$('codeOutput').className='output';$('codeOutput').innerHTML='运行结果会显示在这里。<div id="labResultActions" class="lab-result-actions hidden"><button id="resultBackPathBtn" class="btn">返回学习路径</button><button id="resultOpenLessonBtn" class="btn green">进入对应课程</button></div>';bindLabResultActions()}
+
+function pyFormat(value) {
+  if (value === true) return 'True';
+  if (value === false) return 'False';
+  if (value === null || value === undefined) return 'None';
+  if (Array.isArray(value)) {
+    return '[' + value.map(item => typeof item === 'string' ? "'" + item + "'" : pyFormat(item)).join(', ') + ']';
+  }
+  if (typeof value === 'object') {
+    return '{' + Object.entries(value).map(([key, item]) => {
+      const k = typeof key === 'string' ? "'" + key + "'" : pyFormat(key);
+      const v = typeof item === 'string' ? "'" + item + "'" : pyFormat(item);
+      return k + ': ' + v;
+    }).join(', ') + '}';
+  }
+  return String(value);
+}
+
+function pyTruthy(value) {
+  if (value === null || value === undefined || value === false) return false;
+  if (typeof value === 'number') return value !== 0 && !Number.isNaN(value);
+  if (typeof value === 'string' || Array.isArray(value)) return value.length > 0;
+  if (typeof value === 'object') return Object.keys(value).length > 0;
+  return true;
+}
+
+function pyRange(...args) {
+  let start = 0, stop = 0, step = 1;
+  if (args.length === 1) stop = Number(args[0]);
+  else if (args.length >= 2) {
+    start = Number(args[0]);
+    stop = Number(args[1]);
+    if (args.length >= 3) step = Number(args[2]);
+  } else throw new Error('range() 至少需要1个参数');
+  if (!Number.isFinite(start) || !Number.isFinite(stop) || !Number.isFinite(step)) throw new Error('range() 参数必须是数字');
+  if (step === 0) throw new Error('range() 的步长不能为 0');
+  const values = [];
+  if (step > 0) for (let value = start; value < stop; value += step) values.push(value);
+  else for (let value = start; value > stop; value += step) values.push(value);
+  return values;
+}
+
+function pyEquals(left, right) {
+  if (Array.isArray(left) && Array.isArray(right)) {
+    return left.length === right.length && left.every((item, index) => pyEquals(item, right[index]));
+  }
+  if (left && right && typeof left === 'object' && typeof right === 'object') {
+    const a = Object.keys(left), b = Object.keys(right);
+    return a.length === b.length && a.every(key => Object.prototype.hasOwnProperty.call(right, key) && pyEquals(left[key], right[key]));
+  }
+  return left === right;
+}
+
+function pyBinary(operator, left, right) {
+  switch (operator) {
+    case '+':
+      if (Array.isArray(left) && Array.isArray(right)) return [...left, ...right];
+      if (typeof left === 'string' && typeof right === 'string') return left + right;
+      if (typeof left === 'number' && typeof right === 'number') return left + right;
+      throw new Error('“+”两侧的数据类型不匹配');
+    case '-': return Number(left) - Number(right);
+    case '*':
+      if (typeof left === 'number' && typeof right === 'number') return left * right;
+      if (typeof left === 'string' && Number.isInteger(right) && right >= 0) return left.repeat(right);
+      if (typeof right === 'string' && Number.isInteger(left) && left >= 0) return right.repeat(left);
+      if (Array.isArray(left) && Number.isInteger(right) && right >= 0) return Array.from({length:right}, () => left).flat();
+      if (Array.isArray(right) && Number.isInteger(left) && left >= 0) return Array.from({length:left}, () => right).flat();
+      throw new Error('“*”不能用于这两种数据');
+    case '/':
+      if (Number(right) === 0) throw new Error('不能除以 0');
+      return Number(left) / Number(right);
+    case '//':
+      if (Number(right) === 0) throw new Error('不能除以 0');
+      return Math.floor(Number(left) / Number(right));
+    case '%':
+      if (Number(right) === 0) throw new Error('不能除以 0');
+      return ((Number(left) % Number(right)) + Number(right)) % Number(right);
+    case '**': return Number(left) ** Number(right);
+    case '==': return pyEquals(left, right);
+    case '!=': return !pyEquals(left, right);
+    case '<': return left < right;
+    case '<=': return left <= right;
+    case '>': return left > right;
+    case '>=': return left >= right;
+    case 'in':
+      if (typeof right === 'string') return right.includes(String(left));
+      if (Array.isArray(right)) return right.some(item => pyEquals(item, left));
+      if (right && typeof right === 'object') return Object.prototype.hasOwnProperty.call(right, left);
+      return false;
+    case 'not in': return !pyBinary('in', left, right);
+    default: throw new Error('暂不支持运算符：' + operator);
+  }
+}
+
+function tokenizeExpression(source) {
+  const tokens = [];
+  let index = 0;
+  const operators = ['**', '//', '==', '!=', '<=', '>=', '+', '-', '*', '/', '%', '<', '>', '(', ')', '[', ']', '{', '}', ',', ':', '.'];
+  while (index < source.length) {
+    const char = source[index];
+    if (/\s/.test(char)) { index += 1; continue; }
+    if (char === '"' || char === "'") {
+      const quote = char;
+      let value = '';
+      index += 1;
+      let closed = false;
+      while (index < source.length) {
+        const current = source[index++];
+        if (current === quote) { closed = true; break; }
+        if (current === '\\') {
+          if (index >= source.length) throw new Error('字符串结尾的反斜杠无效');
+          const escaped = source[index++];
+          const map = {n:'\n', t:'\t', r:'\r', '\\':'\\', '"':'"', "'":"'"};
+          value += Object.prototype.hasOwnProperty.call(map, escaped) ? map[escaped] : escaped;
+        } else value += current;
+      }
+      if (!closed) throw new Error('字符串缺少结束引号');
+      tokens.push({type:'literal', value});
+      continue;
+    }
+    if (/[0-9]/.test(char) || (char === '.' && /[0-9]/.test(source[index + 1] || ''))) {
+      const match = source.slice(index).match(/^(?:\d+(?:\.\d*)?|\.\d+)/);
+      tokens.push({type:'literal', value:Number(match[0])});
+      index += match[0].length;
+      continue;
+    }
+    if (/[A-Za-z_]/.test(char)) {
+      const match = source.slice(index).match(/^[A-Za-z_]\w*/);
+      tokens.push({type:'id', value:match[0]});
+      index += match[0].length;
+      continue;
+    }
+    const op = operators.find(item => source.startsWith(item, index));
+    if (!op) throw new Error('无法识别的符号：' + char);
+    tokens.push({type:'op', value:op});
+    index += op.length;
+  }
+  tokens.push({type:'eof', value:''});
+  return tokens;
+}
+
+class PythonExpressionParser {
+  constructor(source) {
+    this.tokens = tokenizeExpression(source);
+    this.index = 0;
+  }
+  current() { return this.tokens[this.index]; }
+  next() { return this.tokens[this.index++]; }
+  is(value) { return this.current().value === value; }
+  match(value) { if (this.is(value)) { this.next(); return true; } return false; }
+  expect(value) { if (!this.match(value)) throw new Error('这里需要“' + value + '”'); }
+  matchId(value) { const token = this.current(); if (token.type === 'id' && token.value === value) { this.next(); return true; } return false; }
+  parse() {
+    const node = this.parseOr();
+    if (this.current().type !== 'eof') throw new Error('表达式后有无法识别的内容：' + this.current().value);
+    return node;
+  }
+  parseOr() {
+    let left = this.parseAnd();
+    while (this.matchId('or')) left = {type:'logical', op:'or', left, right:this.parseAnd()};
+    return left;
+  }
+  parseAnd() {
+    let left = this.parseNot();
+    while (this.matchId('and')) left = {type:'logical', op:'and', left, right:this.parseNot()};
+    return left;
+  }
+  parseNot() {
+    if (this.matchId('not')) return {type:'unary', op:'not', value:this.parseNot()};
+    return this.parseComparison();
+  }
+  parseComparison() {
+    const left = this.parseAdd();
+    const operators = [], rights = [];
+    while (true) {
+      let operator = null;
+      if (['==','!=','<','<=','>','>='].includes(this.current().value)) operator = this.next().value;
+      else if (this.matchId('in')) operator = 'in';
+      else if (this.current().type === 'id' && this.current().value === 'not' && this.tokens[this.index + 1]?.type === 'id' && this.tokens[this.index + 1]?.value === 'in') {
+        this.next(); this.next(); operator = 'not in';
+      }
+      if (!operator) break;
+      operators.push(operator);
+      rights.push(this.parseAdd());
+    }
+    return operators.length ? {type:'compare', left, operators, rights} : left;
+  }
+  parseAdd() {
+    let left = this.parseMultiply();
+    while (this.is('+') || this.is('-')) {
+      const op = this.next().value;
+      left = {type:'binary', op, left, right:this.parseMultiply()};
+    }
+    return left;
+  }
+  parseMultiply() {
+    let left = this.parseUnary();
+    while (['*','/','//','%'].includes(this.current().value)) {
+      const op = this.next().value;
+      left = {type:'binary', op, left, right:this.parseUnary()};
+    }
+    return left;
+  }
+  parseUnary() {
+    if (this.match('+')) return {type:'unary', op:'+', value:this.parseUnary()};
+    if (this.match('-')) return {type:'unary', op:'-', value:this.parseUnary()};
+    return this.parsePower();
+  }
+  parsePower() {
+    let left = this.parsePostfix();
+    if (this.match('**')) left = {type:'binary', op:'**', left, right:this.parseUnary()};
+    return left;
+  }
+  parsePostfix() {
+    let node = this.parsePrimary();
+    while (true) {
+      if (this.match('(')) {
+        const args = [];
+        if (!this.match(')')) {
+          do { args.push(this.parseOr()); } while (this.match(','));
+          this.expect(')');
+        }
+        node = {type:'call', callee:node, args};
+      } else if (this.match('[')) {
+        const index = this.parseOr();
+        this.expect(']');
+        node = {type:'index', target:node, index};
+      } else if (this.match('.')) {
+        const name = this.next();
+        if (name.type !== 'id') throw new Error('点号后需要方法名称');
+        node = {type:'attr', target:node, name:name.value};
+      } else break;
+    }
+    return node;
+  }
+  parsePrimary() {
+    const token = this.next();
+    if (token.type === 'literal') return {type:'literal', value:token.value};
+    if (token.type === 'id') {
+      if (token.value === 'True') return {type:'literal', value:true};
+      if (token.value === 'False') return {type:'literal', value:false};
+      if (token.value === 'None') return {type:'literal', value:null};
+      return {type:'name', name:token.value};
+    }
+    if (token.value === '(') {
+      const first = this.parseOr();
+      if (this.match(',')) {
+        const items = [first];
+        if (!this.match(')')) {
+          do { items.push(this.parseOr()); } while (this.match(','));
+          this.expect(')');
+        }
+        return {type:'list', items};
+      }
+      this.expect(')');
+      return first;
+    }
+    if (token.value === '[') {
+      const items = [];
+      if (!this.match(']')) {
+        do { items.push(this.parseOr()); } while (this.match(','));
+        this.expect(']');
+      }
+      return {type:'list', items};
+    }
+    if (token.value === '{') {
+      const entries = [];
+      if (!this.match('}')) {
+        do {
+          const key = this.parseOr();
+          this.expect(':');
+          const value = this.parseOr();
+          entries.push([key, value]);
+        } while (this.match(','));
+        this.expect('}');
+      }
+      return {type:'dict', entries};
+    }
+    throw new Error('表达式不完整');
+  }
+}
+
+function parseExpression(source) {
+  return new PythonExpressionParser(source).parse();
+}
+
+function resolveName(environment, name) {
+  if (name in environment) return environment[name];
+  throw new Error("变量或函数“" + name + "”还没有定义");
+}
+
+function boundAttribute(target, name) {
+  if (Array.isArray(target)) {
+    if (name === 'append') return value => { target.push(value); return null; };
+    if (name === 'pop') return index => target.splice(index === undefined ? target.length - 1 : Number(index), 1)[0];
+    if (name === 'count') return value => target.filter(item => pyEquals(item, value)).length;
+    if (name === 'index') return value => { const index = target.findIndex(item => pyEquals(item, value)); if (index < 0) throw new Error('列表中没有这个值'); return index; };
+  }
+  if (typeof target === 'string') {
+    if (name === 'upper') return () => target.toUpperCase();
+    if (name === 'lower') return () => target.toLowerCase();
+    if (name === 'strip') return () => target.trim();
+    if (name === 'split') return separator => target.split(separator === undefined ? /\s+/ : separator);
+    if (name === 'replace') return (oldValue, newValue) => target.split(String(oldValue)).join(String(newValue));
+    if (name === 'count') return value => String(value) === '' ? target.length + 1 : target.split(String(value)).length - 1;
+    if (name === 'index') return value => { const index = target.indexOf(String(value)); if (index < 0) throw new Error('字符串中没有这个内容'); return index; };
+    if (name === 'join') return items => items.map(String).join(target);
+  }
+  if (target && typeof target === 'object') {
+    if (name === 'get') return (key, fallback=null) => Object.prototype.hasOwnProperty.call(target, key) ? target[key] : fallback;
+    if (name === 'keys') return () => Object.keys(target);
+    if (name === 'values') return () => Object.values(target);
+    if (name === 'items') return () => Object.entries(target);
+  }
+  throw new Error('暂不支持方法：' + name);
+}
+
+function evaluateExpression(node, environment) {
+  switch (node.type) {
+    case 'literal': return node.value;
+    case 'name': return resolveName(environment, node.name);
+    case 'list': return node.items.map(item => evaluateExpression(item, environment));
+    case 'dict': {
+      const result = {};
+      for (const [keyNode, valueNode] of node.entries) result[evaluateExpression(keyNode, environment)] = evaluateExpression(valueNode, environment);
+      return result;
+    }
+    case 'unary': {
+      const value = evaluateExpression(node.value, environment);
+      if (node.op === 'not') return !pyTruthy(value);
+      if (node.op === '+') return Number(value);
+      if (node.op === '-') return -Number(value);
+      throw new Error('暂不支持一元运算：' + node.op);
+    }
+    case 'logical': {
+      const left = evaluateExpression(node.left, environment);
+      if (node.op === 'and') return pyTruthy(left) ? evaluateExpression(node.right, environment) : left;
+      return pyTruthy(left) ? left : evaluateExpression(node.right, environment);
+    }
+    case 'binary': return pyBinary(node.op, evaluateExpression(node.left, environment), evaluateExpression(node.right, environment));
+    case 'compare': {
+      let previous = evaluateExpression(node.left, environment);
+      for (let index = 0; index < node.operators.length; index += 1) {
+        const right = evaluateExpression(node.rights[index], environment);
+        if (!pyBinary(node.operators[index], previous, right)) return false;
+        previous = right;
+      }
+      return true;
+    }
+    case 'index': {
+      const target = evaluateExpression(node.target, environment);
+      let index = evaluateExpression(node.index, environment);
+      if ((Array.isArray(target) || typeof target === 'string') && typeof index === 'number' && index < 0) index = target.length + index;
+      if (target === null || target === undefined) throw new Error('不能从空值中取数据');
+      return target[index];
+    }
+    case 'attr': return boundAttribute(evaluateExpression(node.target, environment), node.name);
+    case 'call': {
+      const fn = evaluateExpression(node.callee, environment);
+      if (typeof fn !== 'function') throw new Error('这里不是可以调用的函数');
+      return fn(...node.args.map(arg => evaluateExpression(arg, environment)));
+    }
+    default: throw new Error('无法计算表达式');
+  }
+}
+
+function findAssignment(statement) {
+  let quote = null, depth = 0;
+  for (let index = 0; index < statement.length; index += 1) {
+    const char = statement[index];
+    if (quote) {
+      if (char === quote && statement[index - 1] !== '\\') quote = null;
+      continue;
+    }
+    if (char === '"' || char === "'") { quote = char; continue; }
+    if ('([{'.includes(char)) { depth += 1; continue; }
+    if (')]}'.includes(char)) { depth -= 1; continue; }
+    if (depth !== 0) continue;
+    for (const operator of ['**=', '//=', '+=', '-=', '*=', '/=', '%=', '=']) {
+      if (!statement.startsWith(operator, index)) continue;
+      if (operator === '=' && (statement[index - 1] === '=' || statement[index + 1] === '=' || ['<','>','!'].includes(statement[index - 1]))) continue;
+      return {index, operator};
+    }
+  }
+  return null;
+}
+
+function assignTarget(targetSource, value, environment) {
+  const target = targetSource.trim();
+  const nameMatch = target.match(/^[A-Za-z_]\w*$/);
+  if (nameMatch) { environment[target] = value; return; }
+  const indexMatch = target.match(/^([A-Za-z_]\w*)\s*\[(.+)\]$/);
+  if (indexMatch) {
+    const object = resolveName(environment, indexMatch[1]);
+    const key = evaluateExpression(parseExpression(indexMatch[2]), environment);
+    object[key] = value;
+    return;
+  }
+  throw new Error('赋值左侧必须是变量或下标');
+}
+
+function readTarget(targetSource, environment) {
+  const target = targetSource.trim();
+  if (/^[A-Za-z_]\w*$/.test(target)) return resolveName(environment, target);
+  const indexMatch = target.match(/^([A-Za-z_]\w*)\s*\[(.+)\]$/);
+  if (indexMatch) {
+    const object = resolveName(environment, indexMatch[1]);
+    const key = evaluateExpression(parseExpression(indexMatch[2]), environment);
+    return object[key];
+  }
+  throw new Error('无法读取赋值目标');
+}
+
+function parsePythonProgram(code) {
+  const rawLines = code.replace(/\t/g, '    ').split(/\r?\n/);
+  const rows = rawLines.map((text, index) => ({
+    text,
+    trim:text.trim(),
+    indent:(text.match(/^ */) || [''])[0].length,
+    line:index + 1
+  }));
+  function parseBlock(start, indent) {
+    const nodes = [];
+    let index = start;
+    while (index < rows.length) {
+      const row = rows[index];
+      if (!row.trim || row.trim.startsWith('#')) { index += 1; continue; }
+      if (row.indent < indent) break;
+      if (row.indent > indent) throw new Error('第 ' + row.line + ' 行缩进不正确');
+      let match;
+      if ((match = row.trim.match(/^if\s+(.+):$/))) {
+        const branches = [];
+        let result = parseBlock(index + 1, indent + 4);
+        branches.push({condition:match[1], body:result.nodes});
+        index = result.index;
+        while (index < rows.length && rows[index].indent === indent) {
+          const text = rows[index].trim;
+          const elifMatch = text.match(/^elif\s+(.+):$/);
+          if (elifMatch) {
+            result = parseBlock(index + 1, indent + 4);
+            branches.push({condition:elifMatch[1], body:result.nodes});
+            index = result.index;
+            continue;
+          }
+          if (text === 'else:') {
+            result = parseBlock(index + 1, indent + 4);
+            branches.push({condition:null, body:result.nodes});
+            index = result.index;
+          }
+          break;
+        }
+        nodes.push({type:'if', branches, line:row.line});
+        continue;
+      }
+      if ((match = row.trim.match(/^for\s+([A-Za-z_]\w*)\s+in\s+(.+):$/))) {
+        const result = parseBlock(index + 1, indent + 4);
+        nodes.push({type:'for', name:match[1], expression:match[2], body:result.nodes, line:row.line});
+        index = result.index;
+        continue;
+      }
+      if ((match = row.trim.match(/^while\s+(.+):$/))) {
+        const result = parseBlock(index + 1, indent + 4);
+        nodes.push({type:'while', expression:match[1], body:result.nodes, line:row.line});
+        index = result.index;
+        continue;
+      }
+      if ((match = row.trim.match(/^def\s+([A-Za-z_]\w*)\s*\((.*?)\)\s*:\s*$/))) {
+        const result = parseBlock(index + 1, indent + 4);
+        nodes.push({type:'def', name:match[1], args:match[2].trim() ? match[2].split(',').map(item => item.trim()) : [], body:result.nodes, line:row.line});
+        index = result.index;
+        continue;
+      }
+      if ((match = row.trim.match(/^return(?:\s+(.+))?$/))) { nodes.push({type:'return', expression:match[1] || 'None', line:row.line}); index += 1; continue; }
+      if (row.trim === 'break') { nodes.push({type:'break', line:row.line}); index += 1; continue; }
+      if (row.trim === 'continue') { nodes.push({type:'continue', line:row.line}); index += 1; continue; }
+      if (row.trim === 'pass') { nodes.push({type:'pass', line:row.line}); index += 1; continue; }
+      nodes.push({type:'statement', text:row.trim, line:row.line});
+      index += 1;
+    }
+    return {nodes, index};
+  }
+  return parseBlock(0, 0).nodes;
+}
+
+function runPythonSubset(code) {
+  const program = parsePythonProgram(code);
+  const output = [];
+  let operations = 0;
+  const globalEnvironment = Object.create(null);
+  Object.assign(globalEnvironment, {
+    print:(...args) => { output.push(args.map(pyFormat).join(' ')); return null; },
+    range:pyRange,
+    len:value => value === null || value === undefined ? 0 : (typeof value === 'object' && !Array.isArray(value) && typeof value !== 'string' ? Object.keys(value).length : value.length),
+    str:value => pyFormat(value),
+    int:value => parseInt(value, 10),
+    float:value => Number(value),
+    bool:value => pyTruthy(value),
+    list:value => Array.from(value || []),
+    dict:value => Object.assign({}, value || {}),
+    sum:values => values.reduce((total, value) => total + Number(value), 0),
+    min:values => Array.isArray(values) ? Math.min(...values) : Math.min(...arguments),
+    max:values => Array.isArray(values) ? Math.max(...values) : Math.max(...arguments),
+    abs:value => Math.abs(Number(value)),
+    round:(value, digits=0) => { const factor = 10 ** Number(digits); return Math.round(Number(value) * factor) / factor; }
+  });
+
+  function evaluate(source, environment, line) {
+    try { return evaluateExpression(parseExpression(source), environment); }
+    catch (error) { throw new Error('第 ' + line + ' 行：' + error.message); }
+  }
+
+  function execute(nodes, environment) {
+    for (const node of nodes) {
+      operations += 1;
+      if (operations > 10000) throw new Error('运行步骤过多，请检查循环停止条件');
+      if (node.type === 'statement') {
+        const assignment = findAssignment(node.text);
+        if (assignment) {
+          const left = node.text.slice(0, assignment.index).trim();
+          const rightSource = node.text.slice(assignment.index + assignment.operator.length).trim();
+          const right = evaluate(rightSource, environment, node.line);
+          if (assignment.operator === '=') assignTarget(left, right, environment);
+          else {
+            const current = readTarget(left, environment);
+            const operator = assignment.operator.slice(0, -1);
+            assignTarget(left, pyBinary(operator, current, right), environment);
+          }
+        } else evaluate(node.text, environment, node.line);
+        continue;
+      }
+      if (node.type === 'if') {
+        for (const branch of node.branches) {
+          if (branch.condition === null || pyTruthy(evaluate(branch.condition, environment, node.line))) {
+            const signal = execute(branch.body, environment);
+            if (signal) return signal;
+            break;
+          }
+        }
+        continue;
+      }
+      if (node.type === 'for') {
+        const iterable = evaluate(node.expression, environment, node.line);
+        if (!iterable || typeof iterable[Symbol.iterator] !== 'function') throw new Error('第 ' + node.line + ' 行：for 后面的内容不能遍历');
+        for (const value of iterable) {
+          environment[node.name] = value;
+          const signal = execute(node.body, environment);
+          if (signal?.type === 'return') return signal;
+          if (signal?.type === 'break') break;
+          if (signal?.type === 'continue') continue;
+        }
+        continue;
+      }
+      if (node.type === 'while') {
+        let guard = 0;
+        while (pyTruthy(evaluate(node.expression, environment, node.line))) {
+          if (++guard > 2000) throw new Error('第 ' + node.line + ' 行：循环运行次数过多，请检查停止条件');
+          const signal = execute(node.body, environment);
+          if (signal?.type === 'return') return signal;
+          if (signal?.type === 'break') break;
+          if (signal?.type === 'continue') continue;
+        }
+        continue;
+      }
+      if (node.type === 'def') {
+        environment[node.name] = (...values) => {
+          const localEnvironment = Object.create(environment);
+          node.args.forEach((name, index) => { localEnvironment[name] = values[index]; });
+          const signal = execute(node.body, localEnvironment);
+          return signal?.type === 'return' ? signal.value : null;
+        };
+        continue;
+      }
+      if (node.type === 'return') return {type:'return', value:evaluate(node.expression, environment, node.line)};
+      if (node.type === 'break') return {type:'break'};
+      if (node.type === 'continue') return {type:'continue'};
+      if (node.type === 'pass') continue;
+    }
+    return null;
+  }
+
+  execute(program, globalEnvironment);
+  return output.join('\n');
+}
+function openActiveTaskLesson(){const lessonId=state.activeTask?.lesson||1;if(!unlocked(lessonId)){toast('请先完成前面的课程');showView('path');return}openLesson(lessonId)}
+function bindLabResultActions(){const back=$('resultBackPathBtn'),lesson=$('resultOpenLessonBtn');if(back)back.onclick=()=>showView('path');if(lesson){lesson.textContent=`进入第 ${state.activeTask.lesson} 课`;lesson.onclick=openActiveTaskLesson}}
+function renderRunResult(text,passed,isError=false){const out=$('codeOutput');out.className='output '+(isError?'error':passed?'success':'');out.innerHTML=`<div class="runtime-text"></div><div id="labResultActions" class="lab-result-actions ${passed?'':'hidden'}"><button id="resultBackPathBtn" class="btn">返回学习路径</button><button id="resultOpenLessonBtn" class="btn green">进入第 ${state.activeTask.lesson} 课</button></div>`;out.querySelector('.runtime-text').textContent=text;bindLabResultActions()}
+async function runCode(){
+  const code=$('codeEditor').value,t=state.activeTask,button=$('runCodeBtn');
+  button.disabled=true;button.textContent='正在运行…';
+  renderRunResult(state.mode==='api'?'正在由 Python 服务执行…':'正在运行代码…',false);
+  try{
+    let result;
+    if(state.mode==='api'){
+      const response=await request('/api/run-code',{method:'POST',body:JSON.stringify({code})});
+      result=response.output;
+    }else result=runPythonSubset(code);
+    result=(result||'').trim();
+    const expected=t.expected.trim(),passed=result===expected;
+    const message=(result||'代码运行完成，没有输出。')+(passed?'\n\n✓ 挑战通过。你可以返回学习路径，或进入对应课程继续学习。':'\n\n代码已运行，但结果与任务目标不一致。请对照要求修改，或点击“查看提示”。');
+    const me=await saveCode(t,passed,code,result);
+    applyMe(me);
+    renderRunResult(message,passed);
+    if(passed){recordLessonStep(t.lesson,3);toast('代码挑战通过')}
+  }catch(error){
+    renderRunResult('运行错误：\n'+(error.message||error),false,true);
+    try{await saveCode(t,false,code,String(error.message||error))}catch(_){}
+  }finally{button.disabled=false;button.textContent='运行并检查'}
+}
+function renderProfile(){const level=1+Math.floor(state.xp/100);$('profileNickname').textContent=state.user.nickname;$('profileUsername').textContent='学习账号';$('profileXp').textContent=state.xp;$('profileLevel').textContent=level;$('profileStreak').textContent=state.streak;const badges=[['🌱','第一颗芽','完成第1课',state.completed.length>=1],['🧠','概念探索者','完成6节课',state.completed.length>=6],['⌨️','代码实践者','通过1个代码挑战',state.codePassed.length>=1],['🎯','小测达人','答对6道不同小测',state.quizDone.length>=6],['🔥','坚持学习','连续学习3天',state.streak>=3],['🏆','入门毕业','完成全部18节课',state.completed.length===18]];$('badges').innerHTML=badges.map(b=>`<div class="badge ${b[3]?'earned':''}"><div class="ico">${b[0]}</div><h4>${b[1]}</h4><p>${b[2]}</p></div>`).join('');$('moduleProgress').innerHTML=MODULES.map(m=>{const ls=LESSONS.filter(l=>l.module===m.id),n=ls.filter(l=>state.completed.includes(l.id)).length,p=Math.round(n/ls.length*100);return `<div class="module-row"><b>${m.icon} ${m.title}</b><div class="progress"><i style="width:${p}%"></i></div><span>${n}/${ls.length}</span></div>`}).join('')}
+function assistantLocal(q){const s=q.toLowerCase();if(s.includes('indent')||q.includes('缩进'))return '先检查报错行上方的 if、for、while 或 def。它们末尾需要冒号，下一行通常向右缩进4个空格。';if(s.includes('syntax')||q.includes('语法'))return '语法错误常见于括号、引号或冒号没有成对出现。请从报错行和上一行开始逐个检查。';if(s.includes('nameerror')||q.includes('变量')||q.includes('未定义'))return '确认变量是否在使用前已经赋值，并检查大小写和拼写是否完全一致。Python 会区分 name 和 Name。';if(q.includes('循环')||s.includes('while')||s.includes('for'))return '先写清楚：循环从哪里开始、每轮做什么、什么时候结束。while 循环还要确保控制变量每轮都会变化。';if(q.includes('函数')||s.includes('return'))return '函数可以分成输入参数、处理步骤和返回结果三部分。先用一个简单值调用函数，再检查返回值是否符合预期。';return '可以按三步排查：①读最后一行报错类型；②找到报错行并检查上一行；③把代码缩小到最少几行再次运行。把具体报错或代码贴给我，我会继续给出更精确的提示。'}
+async function askAssistant(q){if(state.mode==='api'){const context={task:state.activeTask?state.activeTask.title:'',lesson_id:state.activeTask?state.activeTask.lesson:null,code:$('codeEditor')?.value||''};return (await request('/api/assistant',{method:'POST',body:JSON.stringify({question:q,...context})})).answer}return assistantLocal(q)}
+async function updateAssistantStatus(){if(state.mode!=='api'){$('assistantProvider').textContent='基础助教';return}try{const s=await request('/api/assistant/status');$('assistantProvider').textContent=s.enabled?'千问 · '+s.model:'基础助教'}catch(e){$('assistantProvider').textContent='助教'}}
+function addMsg(text,who){const d=document.createElement('div');d.className='msg '+who;d.textContent=text;$('assistantMessages').appendChild(d);$('assistantMessages').scrollTop=$('assistantMessages').scrollHeight}
+function switchAuth(mode){$('loginTab').classList.toggle('active',mode==='login');$('registerTab').classList.toggle('active',mode==='register');$('loginForm').classList.toggle('hidden',mode!=='login');$('registerForm').classList.toggle('hidden',mode!=='register')}
+
+$('loginTab').onclick=()=>switchAuth('login');$('registerTab').onclick=()=>switchAuth('register');
+$('loginForm').onsubmit=async e=>{e.preventDefault();const m=$('loginMsg');m.className='form-msg';m.textContent='';try{const account=normalizeAccount($('loginUsername').value);const r=await login({account,password:$('loginPassword').value});state.token=r.token;localStorage.setItem('orange_v6_token',r.token);await enterApp()}catch(err){m.textContent=err.message}};
+$('registerForm').onsubmit=async e=>{e.preventDefault();const m=$('registerMsg');m.className='form-msg';m.textContent='';if(!$('guardianConsent').checked)return m.textContent='请先确认监护人同意';const account=normalizeAccount($('regAccount').value),password=$('regPassword').value,confirm=$('regPasswordConfirm').value;if(!/^[A-Za-z0-9_\u4e00-\u9fff]{2,20}$/.test(account))return m.textContent='学习账号仅支持中文、字母、数字或下划线';if(password!==confirm)return m.textContent='两次输入的密码不一致';try{await register({account,password,age_group:$('regAge').value});$('registerForm').reset();switchAuth('login');$('loginUsername').value=account;$('loginPassword').value='';const lm=$('loginMsg');lm.className='form-msg auth-success';lm.textContent='注册成功，请输入刚才设置的密码登录。';$('loginPassword').focus()}catch(err){m.textContent=err.message}};
+$$('.nav button').forEach(b=>b.onclick=()=>showView(b.dataset.view));$$('[data-go]').forEach(b=>b.onclick=()=>showView(b.dataset.go));$('labBackPathBtn').onclick=()=>showView('path');$('labOpenLessonBtn').onclick=openActiveTaskLesson;$('continueBtn').onclick=()=>openLesson(nextLesson().id);$('newPracticeBtn').onclick=startPractice;$('resetCodeBtn').onclick=()=>{$('codeEditor').value=state.activeTask.starter;renderRunResult('运行结果会显示在这里。',false)};$('hintBtn').onclick=()=>{const h=state.activeTask.hints[state.hintIndex%state.activeTask.hints.length];state.hintIndex++;$('hintBox').textContent='提示：'+h;$('hintBox').classList.remove('hidden')};$('runCodeBtn').onclick=runCode;$('themeBtn').onclick=()=>{const dark=document.documentElement.dataset.theme==='dark';document.documentElement.dataset.theme=dark?'light':'dark';$('themeBtn').textContent=dark?'深色':'浅色';localStorage.setItem('orange_v6_theme',dark?'light':'dark')};$('logoutBtn').onclick=async()=>{try{if(state.mode==='api')await request('/api/logout',{method:'POST'})}catch(e){}state.token='';localStorage.removeItem('orange_v6_token');localStorage.removeItem('orange_v6_current');location.reload()};$('assistantFab').onclick=()=>$('assistant').classList.toggle('hidden');$('assistantClose').onclick=()=>$('assistant').classList.add('hidden');$('assistantSend').onclick=async()=>{const q=$('assistantInput').value.trim();if(!q)return;addMsg(q,'me');$('assistantInput').value='';addMsg('正在分析…','bot');const box=$('assistantMessages'),wait=box.lastElementChild;try{const ans=await askAssistant(q);wait.textContent=ans}catch(err){wait.textContent='助教暂时无法回答：'+(err.message||err)}};
+(async()=>{const theme=localStorage.getItem('orange_v6_theme')||'light';document.documentElement.dataset.theme=theme;$('themeBtn').textContent=theme==='dark'?'浅色':'深色';await detectMode();if(state.mode==='api'&&state.token){try{await enterApp();return}catch(e){state.token='';localStorage.removeItem('orange_v6_token')}}if(state.mode==='local'&&localSessionUser()){try{await enterApp();return}catch(e){}}switchAuth('login')})();
+})();
+</script></body></html>
