@@ -9,6 +9,8 @@ services:
     healthCheckPath: /health
     autoDeployTrigger: commit
     envVars:
+      - key: APP_RELEASE
+        value: qwen-diagnostics-20260719
       - key: PYTHON_VERSION
         value: 3.12.8
       - key: QWEN_BASE_URL
