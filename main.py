@@ -348,11 +348,42 @@ def qwen_settings() -> tuple[str, str, str]:
     return api_key, base_url, model
 
 
+def qwen_key_type(api_key: str) -> str:
+    if api_key.startswith("sk-sp-"):
+        return "coding-plan"
+    if api_key.startswith("sk-"):
+        return "standard"
+    return "unknown" if api_key else "missing"
+
+
+def qwen_region(base_url: str) -> str:
+    host = base_url.lower()
+    if "dashscope-intl.aliyuncs.com" in host:
+        return "singapore"
+    if "dashscope.aliyuncs.com" in host:
+        return "beijing"
+    return "custom"
+
+
 @app.get("/api/assistant/status")
-def assistant_status(user: Annotated[sqlite3.Row, Depends(current_user)]) -> dict:
-    del user
-    api_key, _, model = qwen_settings()
-    return {"enabled": bool(api_key), "provider": "qwen" if api_key else "local", "model": model if api_key else "基础助教"}
+def assistant_status() -> dict:
+    api_key, base_url, model = qwen_settings()
+    key_type = qwen_key_type(api_key)
+    compatible = bool(api_key) and key_type != "coding-plan"
+    note = ""
+    if key_type == "coding-plan":
+        note = "Coding Plan Key 不能用于通用百炼 API，请改用按量付费标准 API Key"
+    elif not api_key:
+        note = "尚未配置百炼 API Key"
+    return {
+        "enabled": compatible,
+        "configured": bool(api_key),
+        "provider": "qwen" if compatible else "local",
+        "model": model if compatible else "基础助教",
+        "keyType": key_type,
+        "region": qwen_region(base_url),
+        "note": note,
+    }
 
 
 @app.post("/api/assistant")
@@ -360,7 +391,14 @@ def assistant(data: AssistantIn, user: Annotated[sqlite3.Row, Depends(current_us
     del user
     api_key, base_url, model = qwen_settings()
     if not api_key:
-        return {"answer": local_assistant_answer(data.question), "provider": "local"}
+        return {"answer": local_assistant_answer(data.question), "provider": "local", "model": "基础助教"}
+    if qwen_key_type(api_key) == "coding-plan":
+        return {
+            "answer": local_assistant_answer(data.question),
+            "provider": "local-fallback",
+            "model": "基础助教",
+            "warning": "当前填写的是 Coding Plan Key（sk-sp-），它不能调用通用百炼 API。请在阿里云百炼创建按量付费标准 API Key（sk-）。",
+        }
 
     context_parts = []
     if data.task:
@@ -420,22 +458,40 @@ def assistant(data: AssistantIn, user: Annotated[sqlite3.Row, Depends(current_us
             flush=True,
         )
         safe_code = error_code or "UpstreamError"
-        safe_message = error_message[:300] or "百炼未返回错误说明"
-        raise HTTPException(
-            502,
-            f"千问连接失败（HTTP {status} / {safe_code}）：{safe_message}",
-        ) from exc
+        if status in {401, 403}:
+            warning = (
+                f"百炼拒绝了当前 API Key（HTTP {status}/{safe_code}）。"
+                "请使用华北2（北京）的按量付费标准 API Key，并确认权限为“全部”。"
+            )
+        else:
+            warning = f"千问暂时不可用（HTTP {status}/{safe_code}），已切换到基础助教。"
+        return {
+            "answer": local_assistant_answer(data.question),
+            "provider": "local-fallback",
+            "model": "基础助教",
+            "warning": warning,
+        }
     except httpx.HTTPError as exc:
         print(
             f"Qwen network error: {type(exc).__name__}: {str(exc)[:500]}",
             file=sys.stderr,
             flush=True,
         )
-        raise HTTPException(502, "千问助教网络连接失败，请稍后重试") from exc
+        return {
+            "answer": local_assistant_answer(data.question),
+            "provider": "local-fallback",
+            "model": "基础助教",
+            "warning": "千问网络暂时不可用，已切换到基础助教，请稍后重试。",
+        }
     except (KeyError, IndexError, TypeError, ValueError) as exc:
         print(
             f"Qwen response error: {type(exc).__name__}: {str(exc)[:500]}",
             file=sys.stderr,
             flush=True,
         )
-        raise HTTPException(502, "千问助教返回格式异常，请稍后重试") from exc
+        return {
+            "answer": local_assistant_answer(data.question),
+            "provider": "local-fallback",
+            "model": "基础助教",
+            "warning": "千问返回内容异常，已切换到基础助教，请稍后重试。",
+        }
