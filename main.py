@@ -419,9 +419,11 @@ def assistant(data: AssistantIn, user: Annotated[sqlite3.Row, Depends(current_us
             file=sys.stderr,
             flush=True,
         )
+        safe_code = error_code or "UpstreamError"
+        safe_message = error_message[:300] or "百炼未返回错误说明"
         raise HTTPException(
             502,
-            "千问助教暂时无法连接，请管理员根据服务器日志检查百炼配置",
+            f"千问连接失败（HTTP {status} / {safe_code}）：{safe_message}",
         ) from exc
     except httpx.HTTPError as exc:
         print(
