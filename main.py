@@ -343,7 +343,8 @@ def local_assistant_answer(question: str) -> str:
 def qwen_settings() -> tuple[str, str, str]:
     api_key = os.getenv("DASHSCOPE_API_KEY", "").strip()
     base_url = os.getenv("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1").rstrip("/")
-    model = os.getenv("QWEN_MODEL", "qwen3.7-plus").strip() or "qwen3.7-plus"
+    configured_model = os.getenv("QWEN_MODEL", "").strip()
+    model = "qwen3.6-flash" if configured_model in {"", "qwen-plus", "qwen3.7-plus"} else configured_model
     return api_key, base_url, model
 
 
@@ -390,7 +391,6 @@ def assistant(data: AssistantIn, user: Annotated[sqlite3.Row, Depends(current_us
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
-        "X-DashScope-DataInspection": '{"input":"cip","output":"cip"}',
     }
     try:
         with httpx.Client(timeout=35.0) as client:
