@@ -65,7 +65,7 @@
   <section id="view-path" class="view"><div class="section-head"><div><h2>系统学习路径</h2><p>6个模块、18节课程，完成上一课后解锁下一课。</p></div></div><div class="path-layout"><aside class="panel path-side"><span class="tag">个人总进度</span><div id="overallRing" class="overall-ring"><b id="overallPercent">0%</b></div><p id="overallText" class="muted" style="text-align:center">已完成 0 / 18</p><hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><b>学习提示</b><p class="muted" style="line-height:1.75;font-size:14px">先完成本课小测，再标记课程完成。遇到错误时先观察报错行，再使用智能助教获得分步提示。</p></aside><div id="moduleList" class="module-list"></div></div></section>
   <section id="view-lesson" class="view"><div id="lessonPage"></div></section>
   <section id="view-practice" class="view"><div class="section-head"><div><h2>练习中心</h2><p>从已解锁课程中随机抽题，答错内容自动加入错题记录。</p></div><button id="newPracticeBtn" class="btn primary">开始新练习</button></div><div class="practice-grid"><div id="practiceCard" class="panel question-card"><div class="empty">点击“开始新练习”，从已学内容中抽取6道题。</div></div><aside class="panel"><h3 style="margin-top:0">错题记录</h3><p class="muted">答错后查看解析，并在下一次练习中再次遇到它。</p><div id="wrongList" class="wrong-list"></div></aside></div></section>
-  <section id="view-lab" class="view"><div class="section-head"><div><h2>代码实验室</h2><p>选择任务，修改并运行 Python 代码。</p></div></div><div class="lab-return-row"><button id="labBackPathBtn" class="btn">← 返回学习路径</button><button id="labOpenLessonBtn" class="btn">进入对应课程</button></div><div class="lab-layout"><aside class="panel"><h3 style="margin-top:0">挑战任务</h3><div id="taskList" class="task-list"></div></aside><div class="panel"><div class="lab-head"><div><span id="taskLevel" class="tag orange">入门</span><h2 id="taskTitle">自我介绍生成器</h2><p id="taskInstruction" class="muted"></p></div><div class="actions"><button id="resetCodeBtn" class="btn">恢复代码</button><button id="hintBtn" class="btn">查看提示</button><button id="runCodeBtn" class="btn primary">运行并检查</button></div></div><div id="hintBox" class="hint-box hidden"></div><div class="lab-work"><textarea id="codeEditor" class="editor" spellcheck="false"></textarea><div id="codeOutput" class="output">运行结果会显示在这里。<div id="labResultActions" class="lab-result-actions hidden"><button id="resultBackPathBtn" class="btn">返回学习路径</button><button id="resultOpenLessonBtn" class="btn green">进入对应课程</button></div></div></div></div></div></section>
+  <section id="view-lab" class="view"><div class="section-head"><div><h2>代码实验室</h2><p>选择任务，修改并运行 Python 代码。</p></div></div><div class="lab-return-row"><button id="labBackPathBtn" class="btn">← 返回学习路径</button><button id="labOpenLessonBtn" class="btn">查看对应课程</button></div><div class="lab-layout"><aside class="panel"><h3 style="margin-top:0">挑战任务</h3><div id="taskList" class="task-list"></div></aside><div class="panel"><div class="lab-head"><div><span id="taskLevel" class="tag orange">入门</span><h2 id="taskTitle">自我介绍生成器</h2><p id="taskInstruction" class="muted"></p></div><div class="actions"><button id="resetCodeBtn" class="btn">恢复代码</button><button id="hintBtn" class="btn">查看提示</button><button id="runCodeBtn" class="btn primary">运行并检查</button></div></div><div id="hintBox" class="hint-box hidden"></div><div class="lab-work"><textarea id="codeEditor" class="editor" spellcheck="false"></textarea><div id="codeOutput" class="output">运行结果会显示在这里。<div id="labResultActions" class="lab-result-actions hidden"><button id="resultBackPathBtn" class="btn">返回学习路径</button><button id="resultOpenLessonBtn" class="btn green">继续学习</button></div></div></div></div></div></section>
   <section id="view-profile" class="view"><div class="section-head"><div><h2>我的学习</h2><p>查看个人进度、能力徽章和各模块完成情况。</p></div></div><div class="profile-grid"><aside class="panel profile-card"><div class="big-avatar">🍊</div><h2 id="profileNickname">学习者</h2><p id="profileUsername">@username</p><div class="profile-stats"><div><b id="profileXp">0</b><span class="muted">经验值</span></div><div><b id="profileLevel">1</b><span class="muted">等级</span></div><div><b id="profileStreak">0</b><span class="muted">连续天数</span></div></div></aside><div><div class="panel"><h3 style="margin-top:0">能力徽章</h3><div id="badges" class="badges"></div></div><div class="panel" style="margin-top:18px"><h3 style="margin-top:0">模块完成情况</h3><div id="moduleProgress" class="module-progress"></div></div></div></div></section>
  </main>
  <button id="assistantFab" class="assistant-fab">✨ 智能助教</button><section id="assistant" class="assistant hidden"><div class="assistant-head"><h3>智能助教</h3><span id="assistantProvider" class="assistant-provider">基础助教</span><button id="assistantClose" class="btn">关闭</button></div><div class="assistant-body"><div id="assistantMessages" class="assistant-messages"><div class="msg bot">把看不懂的概念、报错信息或代码贴给我。我会先给提示，再帮助你定位问题。</div></div><textarea id="assistantInput" placeholder="例如：为什么我的 if 下面会报缩进错误？"></textarea><div class="assistant-actions"><button id="assistantSend" class="btn primary">发送问题</button></div></div></section>
@@ -128,12 +128,27 @@ function openLesson(id){
  $('completeLessonBtn').onclick=async()=>{if(done){if(next)openLesson(next.id);else showView('profile');return}if(!quizPassed)return toast('请先答对本课小测');try{const me=await completeLesson(l.id);applyMe(me);updateLessonProgressUI(5);toast(next?'本课完成，正在进入下一课':'恭喜完成全部课程');setTimeout(()=>{if(next)openLesson(next.id);else showView('profile')},900)}catch(e){toast(e.message)}};
  setTimeout(()=>recordLessonStep(l.id,1),100);
 }
-function openLabForLesson(lessonId,code){const task=TASKS.find(t=>t.lesson===lessonId)||TASKS[0];state.activeTask=task;renderTasks();$('codeEditor').value=code||task.starter;$('codeOutput').textContent='运行结果会显示在这里。';showView('lab')}
+function openLabForLesson(lessonId,code){const task=TASKS.find(t=>t.lesson===lessonId)||TASKS[0];state.activeTask=task;renderTasks();loadTask(true);$('codeEditor').value=code||task.starter;showView('lab')}
 function renderWrong(){if(!state.wrong.length){$('wrongList').innerHTML='<div class="empty">目前没有错题记录。</div>';return}$('wrongList').innerHTML=state.wrong.map(id=>{const l=LESSONS.find(x=>x.quiz.id===id);return l?`<div class="wrong-item"><b>${esc(l.quiz.question)}</b><span>来自第 ${l.id} 课 · ${esc(l.title)}</span></div>`:''}).join('')}
 function startPractice(){const available=LESSONS.filter(l=>unlocked(l.id));const pool=available.map(l=>l.quiz);state.practice=pool.sort(()=>Math.random()-.5).slice(0,Math.min(6,pool.length));state.practiceIndex=0;state.practiceScore=0;renderPracticeQuestion()}
 function renderPracticeQuestion(){if(!state.practice||state.practiceIndex>=state.practice.length){$('practiceCard').innerHTML=`<h3>练习完成</h3><p class="muted">本次答对 ${state.practiceScore} / ${state.practice.length}。错题已记录，可以再次练习。</p><button class="btn primary" id="againPractice">再练一次</button>`;$('againPractice').onclick=startPractice;return}const q=state.practice[state.practiceIndex];$('practiceCard').innerHTML=`<span class="tag orange">第 ${state.practiceIndex+1} / ${state.practice.length} 题</span><h3>${esc(q.question)}</h3><div class="options">${q.options.map((o,i)=>`<label class="option"><input type="radio" name="practiceOption" value="${i}"><span>${esc(o)}</span></label>`).join('')}</div><div id="practiceFeedback" class="quiz-feedback"></div><div class="practice-actions"><span class="muted">已答对 ${state.practiceScore} 题</span><button id="submitPractice" class="btn primary">提交答案</button></div>`;$('submitPractice').onclick=async()=>{const p=document.querySelector('input[name=practiceOption]:checked');if(!p)return toast('请选择一个答案');const correct=Number(p.value)===q.answer,f=$('practiceFeedback');f.className='quiz-feedback '+(correct?'ok':'bad');f.textContent=(correct?'回答正确。':'回答错误。')+q.explain;if(correct)state.practiceScore++;try{const me=await saveQuiz(q,correct,Number(p.value));applyMe(me)}catch(e){}$('submitPractice').textContent='下一题';$('submitPractice').onclick=()=>{state.practiceIndex++;renderPracticeQuestion()}}}
 function renderTasks(){$('taskList').innerHTML=TASKS.map((t,index)=>`<button class="task-btn ${t.id===state.activeTask.id?'active':''}" data-task="${t.id}"><b><span class="task-seq">任务 ${index+1}</span>${esc(t.title)}</b><span>对应第 ${t.lesson} 课 · ${t.level} ${state.codePassed.includes(t.id)?'· 已通过':''}</span></button>`).join('');$$('[data-task]').forEach(b=>b.onclick=()=>{state.activeTask=TASKS.find(t=>t.id===b.dataset.task);state.hintIndex=0;renderTasks();loadTask(true)});const t=state.activeTask,index=TASKS.findIndex(x=>x.id===t.id);$('taskLevel').textContent=`任务 ${index+1} · ${t.level}`;$('taskTitle').textContent=t.title;$('taskInstruction').textContent=t.instruction;if(!$('codeEditor').value)loadTask(true)}
-function loadTask(setCode=true){const t=state.activeTask,index=TASKS.findIndex(x=>x.id===t.id);$('taskLevel').textContent=`任务 ${index+1} · ${t.level}`;$('taskTitle').textContent=t.title;$('taskInstruction').textContent=t.instruction;$('labOpenLessonBtn').textContent=`进入第 ${t.lesson} 课`;$('resultOpenLessonBtn').textContent=`进入第 ${t.lesson} 课`;if(setCode)$('codeEditor').value=t.starter;$('hintBox').classList.add('hidden');$('codeOutput').className='output';$('codeOutput').innerHTML='运行结果会显示在这里。<div id="labResultActions" class="lab-result-actions hidden"><button id="resultBackPathBtn" class="btn">返回学习路径</button><button id="resultOpenLessonBtn" class="btn green">进入对应课程</button></div>';bindLabResultActions()}
+function taskLessonButtonLabel(){
+ const lessonId=state.activeTask?.lesson||1;
+ return state.currentLesson===lessonId?`返回第 ${lessonId} 课`:`查看第 ${lessonId} 课`;
+}
+function loadTask(setCode=true){
+ const t=state.activeTask,index=TASKS.findIndex(x=>x.id===t.id);
+ $('taskLevel').textContent=`任务 ${index+1} · ${t.level}`;
+ $('taskTitle').textContent=t.title;
+ $('taskInstruction').textContent=t.instruction;
+ $('labOpenLessonBtn').textContent=taskLessonButtonLabel();
+ if(setCode)$('codeEditor').value=t.starter;
+ $('hintBox').classList.add('hidden');
+ $('codeOutput').className='output';
+ $('codeOutput').innerHTML='运行结果会显示在这里。<div id="labResultActions" class="lab-result-actions hidden"><button id="resultBackPathBtn" class="btn">返回学习路径</button><button id="resultOpenLessonBtn" class="btn green">继续学习</button></div>';
+ bindLabResultActions(false);
+}
 
 function pyFormat(value) {
   if (value === true) return 'True';
@@ -717,9 +732,48 @@ function runPythonSubset(code) {
   execute(program, globalEnvironment);
   return output.join('\n');
 }
-function openActiveTaskLesson(){const lessonId=state.activeTask?.lesson||1;if(!unlocked(lessonId)){toast('请先完成前面的课程');showView('path');return}openLesson(lessonId)}
-function bindLabResultActions(){const back=$('resultBackPathBtn'),lesson=$('resultOpenLessonBtn');if(back)back.onclick=()=>showView('path');if(lesson){lesson.textContent=`进入第 ${state.activeTask.lesson} 课`;lesson.onclick=openActiveTaskLesson}}
-function renderRunResult(text,passed,isError=false){const out=$('codeOutput');out.className='output '+(isError?'error':passed?'success':'');out.innerHTML=`<div class="runtime-text"></div><div id="labResultActions" class="lab-result-actions ${passed?'':'hidden'}"><button id="resultBackPathBtn" class="btn">返回学习路径</button><button id="resultOpenLessonBtn" class="btn green">进入第 ${state.activeTask.lesson} 课</button></div>`;out.querySelector('.runtime-text').textContent=text;bindLabResultActions()}
+function openActiveTaskLesson(){
+ const lessonId=state.activeTask?.lesson||1;
+ if(!unlocked(lessonId)){toast('请先完成前面的课程');showView('path');return}
+ openLesson(lessonId);
+}
+function taskResultAction(){
+ const lessonId=state.activeTask?.lesson||1;
+ if(state.completed.includes(lessonId)){
+   const next=LESSONS.find(x=>x.id===lessonId+1);
+   if(next&&unlocked(next.id))return {label:`继续第 ${next.id} 课`,lessonId:next.id};
+   return {label:'查看学习成果',view:'profile'};
+ }
+ return {label:`返回第 ${lessonId} 课继续学习`,lessonId};
+}
+function openTaskResultAction(){
+ const action=taskResultAction();
+ if(action.view){showView(action.view);return}
+ openLesson(action.lessonId);
+}
+function taskPassedMessage(){
+ const action=taskResultAction(),lessonId=state.activeTask?.lesson||1;
+ if(action.view==='profile')return '✓ 挑战通过。全部课程已经完成，可以查看学习成果。';
+ if(action.lessonId===lessonId)return `✓ 挑战通过。请返回第 ${lessonId} 课完成本课小测。`;
+ return `✓ 挑战通过。可以继续学习第 ${action.lessonId} 课。`;
+}
+function bindLabResultActions(passed=false){
+ const back=$('resultBackPathBtn'),lesson=$('resultOpenLessonBtn');
+ if(back)back.onclick=()=>showView('path');
+ if(lesson){
+   const action=taskResultAction();
+   lesson.textContent=action.label;
+   lesson.onclick=openTaskResultAction;
+   lesson.disabled=!passed;
+ }
+}
+function renderRunResult(text,passed,isError=false){
+ const out=$('codeOutput');
+ out.className='output '+(isError?'error':passed?'success':'');
+ out.innerHTML=`<div class="runtime-text"></div><div id="labResultActions" class="lab-result-actions ${passed?'':'hidden'}"><button id="resultBackPathBtn" class="btn">返回学习路径</button><button id="resultOpenLessonBtn" class="btn green">继续学习</button></div>`;
+ out.querySelector('.runtime-text').textContent=text;
+ bindLabResultActions(passed);
+}
 async function runCode(){
   const code=$('codeEditor').value,t=state.activeTask,button=$('runCodeBtn');
   button.disabled=true;button.textContent='正在运行…';
@@ -732,7 +786,7 @@ async function runCode(){
     }else result=runPythonSubset(code);
     result=(result||'').trim();
     const expected=t.expected.trim(),passed=result===expected;
-    const message=(result||'代码运行完成，没有输出。')+(passed?'\n\n✓ 挑战通过。你可以返回学习路径，或进入对应课程继续学习。':'\n\n代码已运行，但结果与任务目标不一致。请对照要求修改，或点击“查看提示”。');
+    const message=(result||'代码运行完成，没有输出。')+(passed?'\n\n'+taskPassedMessage():'\n\n代码已运行，但结果与任务目标不一致。请对照要求修改，或点击“查看提示”。');
     const me=await saveCode(t,passed,code,result);
     applyMe(me);
     renderRunResult(message,passed);
