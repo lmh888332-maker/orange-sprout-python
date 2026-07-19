@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 DB_PATH = Path(os.getenv("DATABASE_PATH", str(BASE_DIR / "orange_sprout.db")))
 LESSON_IDS = set(range(1, 19))
-TASK_IDS = {f"t{i}" for i in range(1, 9)}
+TASK_IDS = {f"t{i}" for i in range(1, 19)}
 QUESTION_IDS = {f"q{i}" for i in range(1, 19)}
 
 app = FastAPI(title="橙芽 Python 学园", version="7.0.0")
