@@ -397,7 +397,8 @@ def assistant(data: AssistantIn, user: Annotated[sqlite3.Row, Depends(current_us
             "answer": local_assistant_answer(data.question),
             "provider": "local-fallback",
             "model": "基础助教",
-            "warning": "当前填写的是 Coding Plan Key（sk-sp-），它不能调用通用百炼 API。请在阿里云百炼创建按量付费标准 API Key（sk-）。",
+            "warning": "智能助教暂时不可用，已为你切换到基础助教。",
+            "diagnostic": "coding-plan-key-incompatible",
         }
 
     context_parts = []
@@ -458,18 +459,13 @@ def assistant(data: AssistantIn, user: Annotated[sqlite3.Row, Depends(current_us
             flush=True,
         )
         safe_code = error_code or "UpstreamError"
-        if status in {401, 403}:
-            warning = (
-                f"百炼拒绝了当前 API Key（HTTP {status}/{safe_code}）。"
-                "请使用华北2（北京）的按量付费标准 API Key，并确认权限为“全部”。"
-            )
-        else:
-            warning = f"千问暂时不可用（HTTP {status}/{safe_code}），已切换到基础助教。"
+        warning = "智能助教暂时不可用，已为你切换到基础助教。"
         return {
             "answer": local_assistant_answer(data.question),
             "provider": "local-fallback",
             "model": "基础助教",
             "warning": warning,
+            "diagnostic": f"HTTP {status}/{safe_code}",
         }
     except httpx.HTTPError as exc:
         print(
@@ -481,7 +477,8 @@ def assistant(data: AssistantIn, user: Annotated[sqlite3.Row, Depends(current_us
             "answer": local_assistant_answer(data.question),
             "provider": "local-fallback",
             "model": "基础助教",
-            "warning": "千问网络暂时不可用，已切换到基础助教，请稍后重试。",
+            "warning": "智能助教暂时不可用，已为你切换到基础助教。",
+            "diagnostic": "qwen-network-error",
         }
     except (KeyError, IndexError, TypeError, ValueError) as exc:
         print(
@@ -493,5 +490,6 @@ def assistant(data: AssistantIn, user: Annotated[sqlite3.Row, Depends(current_us
             "answer": local_assistant_answer(data.question),
             "provider": "local-fallback",
             "model": "基础助教",
-            "warning": "千问返回内容异常，已切换到基础助教，请稍后重试。",
+            "warning": "智能助教暂时不可用，已为你切换到基础助教。",
+            "diagnostic": "qwen-response-error",
         }
