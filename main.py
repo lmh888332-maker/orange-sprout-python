@@ -343,7 +343,7 @@ def local_assistant_answer(question: str) -> str:
 def qwen_settings() -> tuple[str, str, str]:
     api_key = os.getenv("DASHSCOPE_API_KEY", "").strip()
     base_url = os.getenv("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1").rstrip("/")
-    model = os.getenv("QWEN_MODEL", "qwen-plus").strip() or "qwen-plus"
+    model = os.getenv("QWEN_MODEL", "qwen3.7-plus").strip() or "qwen3.7-plus"
     return api_key, base_url, model
 
 
@@ -401,5 +401,39 @@ def assistant(data: AssistantIn, user: Annotated[sqlite3.Row, Depends(current_us
         if not answer:
             raise ValueError("千问返回了空内容")
         return {"answer": answer, "provider": "qwen", "model": model}
-    except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
-        raise HTTPException(502, "千问助教暂时无法连接，请检查百炼API Key、地域地址和模型配置") from exc
+    except httpx.HTTPStatusError as exc:
+        status = exc.response.status_code
+        request_id = exc.response.headers.get("x-request-id", "")
+        try:
+            error_body = exc.response.json()
+            error_code = str(error_body.get("code", "")).strip()
+            error_message = str(error_body.get("message", "")).strip()
+        except (ValueError, TypeError, AttributeError):
+            error_code = ""
+            error_message = exc.response.text.strip()[:500]
+        print(
+            "Qwen upstream error:"
+            f" status={status} code={error_code or '-'}"
+            f" request_id={request_id or '-'}"
+            f" message={error_message[:500] or '-'}",
+            file=sys.stderr,
+            flush=True,
+        )
+        raise HTTPException(
+            502,
+            "千问助教暂时无法连接，请管理员根据服务器日志检查百炼配置",
+        ) from exc
+    except httpx.HTTPError as exc:
+        print(
+            f"Qwen network error: {type(exc).__name__}: {str(exc)[:500]}",
+            file=sys.stderr,
+            flush=True,
+        )
+        raise HTTPException(502, "千问助教网络连接失败，请稍后重试") from exc
+    except (KeyError, IndexError, TypeError, ValueError) as exc:
+        print(
+            f"Qwen response error: {type(exc).__name__}: {str(exc)[:500]}",
+            file=sys.stderr,
+            flush=True,
+        )
+        raise HTTPException(502, "千问助教返回格式异常，请稍后重试") from exc
