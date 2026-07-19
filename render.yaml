@@ -10,7 +10,7 @@ services:
     autoDeployTrigger: commit
     envVars:
       - key: APP_RELEASE
-        value: all-lessons-code-tasks-20260719
+        value: write-code-before-checking-20260719
       - key: PYTHON_VERSION
         value: 3.12.8
       - key: QWEN_BASE_URL
