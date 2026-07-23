@@ -10,7 +10,7 @@ services:
     autoDeployTrigger: commit
     envVars:
       - key: APP_RELEASE
-        value: secure-learning-flow-20260723
+        value: secure-learning-flow-20260723-r1
       - key: PYTHON_VERSION
         value: 3.12.8
       - key: QWEN_BASE_URL
