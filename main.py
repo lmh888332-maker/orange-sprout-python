@@ -16,7 +16,14 @@ from collections import defaultdict, deque
 from datetime import UTC, date, datetime, timedelta
 from io import StringIO
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any, Mapping
+
+try:
+    import psycopg
+    from psycopg.rows import dict_row
+except ImportError:  # 本地只使用 SQLite 时允许不安装 PostgreSQL 驱动。
+    psycopg = None
+    dict_row = None
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import FileResponse
@@ -26,6 +33,10 @@ from pydantic import BaseModel, Field
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 DB_PATH = Path(os.getenv("DATABASE_PATH", str(BASE_DIR / "orange_sprout.db")))
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+DATABASE_INTEGRITY_ERRORS: tuple[type[BaseException], ...] = (sqlite3.IntegrityError,)
+if psycopg is not None:
+    DATABASE_INTEGRITY_ERRORS += (psycopg.IntegrityError,)
 LESSON_IDS = set(range(1, 19))
 TASK_IDS = {f"t{i}" for i in range(1, 19)}
 QUESTION_IDS = {f"q{i}" for i in range(1, 19)}
@@ -194,13 +205,69 @@ class AssistantIn(BaseModel):
     lesson_id: int | None = None
 
 
-def connect() -> sqlite3.Connection:
+def database_backend() -> str:
+    return "postgresql" if DATABASE_URL else "sqlite"
+
+
+def normalize_database_url(url: str) -> str:
+    if url.startswith("postgres://"):
+        return "postgresql://" + url.removeprefix("postgres://")
+    return url
+
+
+def adapt_sql(query: str, backend: str | None = None) -> str:
+    if (backend or database_backend()) == "postgresql":
+        return query.replace("?", "%s")
+    return query
+
+
+class DatabaseConnection:
+    def __init__(self, raw: Any, backend: str) -> None:
+        self.raw = raw
+        self.backend = backend
+
+    def execute(self, query: str, params: tuple[Any, ...] = ()) -> Any:
+        if self.backend == "sqlite":
+            params = tuple(
+                value.isoformat(sep=" ")
+                if isinstance(value, datetime)
+                else value.isoformat()
+                if isinstance(value, date)
+                else value
+                for value in params
+            )
+        return self.raw.execute(adapt_sql(query, self.backend), params)
+
+    def executescript(self, script: str) -> Any:
+        return self.raw.executescript(script)
+
+    def __enter__(self) -> "DatabaseConnection":
+        self.raw.__enter__()
+        return self
+
+    def __exit__(self, exc_type: Any, exc: Any, traceback: Any) -> Any:
+        try:
+            return self.raw.__exit__(exc_type, exc, traceback)
+        finally:
+            self.raw.close()
+
+
+def connect() -> DatabaseConnection:
+    if DATABASE_URL:
+        if psycopg is None or dict_row is None:
+            raise RuntimeError("已配置 DATABASE_URL，但未安装 psycopg PostgreSQL 驱动")
+        raw = psycopg.connect(
+            normalize_database_url(DATABASE_URL),
+            row_factory=dict_row,
+            connect_timeout=10,
+        )
+        return DatabaseConnection(raw, "postgresql")
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(DB_PATH, timeout=10)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    conn.execute("PRAGMA busy_timeout = 10000")
-    return conn
+    raw = sqlite3.connect(DB_PATH, timeout=10)
+    raw.row_factory = sqlite3.Row
+    raw.execute("PRAGMA foreign_keys = ON")
+    raw.execute("PRAGMA busy_timeout = 10000")
+    return DatabaseConnection(raw, "sqlite")
 
 
 def enforce_rate_limit(scope: str, key: str, limit: int, window_seconds: int) -> None:
@@ -238,77 +305,166 @@ def hash_password(password: str, salt: str | None = None) -> tuple[str, str]:
     return salt, digest
 
 
+SQLITE_SCHEMA = """
+CREATE TABLE IF NOT EXISTS users(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nickname TEXT NOT NULL,
+  username TEXT NOT NULL UNIQUE,
+  age_group TEXT NOT NULL DEFAULT 'other',
+  guardian_consent_at TEXT,
+  salt TEXT NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS sessions(
+  token TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expires_at TEXT,
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS lesson_progress(
+  user_id INTEGER NOT NULL,
+  lesson_id INTEGER NOT NULL,
+  completed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(user_id, lesson_id),
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS lesson_steps(
+  user_id INTEGER NOT NULL,
+  lesson_id INTEGER NOT NULL,
+  step INTEGER NOT NULL DEFAULT 1,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(user_id, lesson_id),
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS quiz_attempts(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  question_id TEXT NOT NULL,
+  module_id INTEGER NOT NULL DEFAULT 0,
+  correct INTEGER NOT NULL,
+  selected INTEGER NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS code_submissions(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  task_id TEXT NOT NULL,
+  lesson_id INTEGER NOT NULL,
+  passed INTEGER NOT NULL,
+  code TEXT NOT NULL,
+  output TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS activity_days(
+  user_id INTEGER NOT NULL,
+  activity_date TEXT NOT NULL,
+  PRIMARY KEY(user_id, activity_date),
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS assistant_usage(
+  user_id INTEGER NOT NULL,
+  usage_date TEXT NOT NULL,
+  request_count INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY(user_id, usage_date),
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+"""
+
+POSTGRES_SCHEMA = """
+CREATE TABLE IF NOT EXISTS users(
+  id BIGSERIAL PRIMARY KEY,
+  nickname TEXT NOT NULL,
+  username TEXT NOT NULL UNIQUE,
+  age_group TEXT NOT NULL DEFAULT 'other',
+  guardian_consent_at TIMESTAMPTZ,
+  salt TEXT NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS sessions(
+  token TEXT PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expires_at TIMESTAMPTZ
+);
+CREATE TABLE IF NOT EXISTS lesson_progress(
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  lesson_id INTEGER NOT NULL,
+  completed_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(user_id, lesson_id)
+);
+CREATE TABLE IF NOT EXISTS lesson_steps(
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  lesson_id INTEGER NOT NULL,
+  step INTEGER NOT NULL DEFAULT 1,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(user_id, lesson_id)
+);
+CREATE TABLE IF NOT EXISTS quiz_attempts(
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  question_id TEXT NOT NULL,
+  module_id INTEGER NOT NULL DEFAULT 0,
+  correct INTEGER NOT NULL,
+  selected INTEGER NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS code_submissions(
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  task_id TEXT NOT NULL,
+  lesson_id INTEGER NOT NULL,
+  passed INTEGER NOT NULL,
+  code TEXT NOT NULL,
+  output TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS activity_days(
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  activity_date DATE NOT NULL,
+  PRIMARY KEY(user_id, activity_date)
+);
+CREATE TABLE IF NOT EXISTS assistant_usage(
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  usage_date DATE NOT NULL,
+  request_count INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY(user_id, usage_date)
+);
+"""
+
+
+def execute_schema(conn: DatabaseConnection, schema: str) -> None:
+    for statement in schema.split(";"):
+        if statement.strip():
+            conn.execute(statement)
+
+
 def init_db() -> None:
     with connect() as conn:
+        if conn.backend == "postgresql":
+            execute_schema(conn, POSTGRES_SCHEMA)
+            conn.execute(
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS guardian_consent_at TIMESTAMPTZ"
+            )
+            conn.execute(
+                "ALTER TABLE sessions ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ"
+            )
+            conn.execute(
+                """
+                UPDATE sessions
+                SET expires_at=created_at + (? * INTERVAL '1 day')
+                WHERE expires_at IS NULL
+                """,
+                (SESSION_DAYS,),
+            )
+            return
+
         conn.execute("PRAGMA journal_mode = WAL")
-        conn.executescript("""
-        CREATE TABLE IF NOT EXISTS users(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          nickname TEXT NOT NULL,
-          username TEXT NOT NULL UNIQUE,
-          age_group TEXT NOT NULL DEFAULT 'other',
-          guardian_consent_at TEXT,
-          salt TEXT NOT NULL,
-          password_hash TEXT NOT NULL,
-          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-        );
-        CREATE TABLE IF NOT EXISTS sessions(
-          token TEXT PRIMARY KEY,
-          user_id INTEGER NOT NULL,
-          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          expires_at TEXT,
-          FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-        CREATE TABLE IF NOT EXISTS lesson_progress(
-          user_id INTEGER NOT NULL,
-          lesson_id INTEGER NOT NULL,
-          completed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          PRIMARY KEY(user_id, lesson_id),
-          FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-        CREATE TABLE IF NOT EXISTS lesson_steps(
-          user_id INTEGER NOT NULL,
-          lesson_id INTEGER NOT NULL,
-          step INTEGER NOT NULL DEFAULT 1,
-          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          PRIMARY KEY(user_id, lesson_id),
-          FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-        CREATE TABLE IF NOT EXISTS quiz_attempts(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id INTEGER NOT NULL,
-          question_id TEXT NOT NULL,
-          module_id INTEGER NOT NULL DEFAULT 0,
-          correct INTEGER NOT NULL,
-          selected INTEGER NOT NULL,
-          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-        CREATE TABLE IF NOT EXISTS code_submissions(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id INTEGER NOT NULL,
-          task_id TEXT NOT NULL,
-          lesson_id INTEGER NOT NULL,
-          passed INTEGER NOT NULL,
-          code TEXT NOT NULL,
-          output TEXT NOT NULL,
-          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-        CREATE TABLE IF NOT EXISTS activity_days(
-          user_id INTEGER NOT NULL,
-          activity_date TEXT NOT NULL,
-          PRIMARY KEY(user_id, activity_date),
-          FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-        CREATE TABLE IF NOT EXISTS assistant_usage(
-          user_id INTEGER NOT NULL,
-          usage_date TEXT NOT NULL,
-          request_count INTEGER NOT NULL DEFAULT 0,
-          PRIMARY KEY(user_id, usage_date),
-          FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-        """)
+        conn.executescript(SQLITE_SCHEMA)
         user_columns = {row["name"] for row in conn.execute("PRAGMA table_info(users)")}
         if "guardian_consent_at" not in user_columns:
             conn.execute("ALTER TABLE users ADD COLUMN guardian_consent_at TEXT")
@@ -334,10 +490,17 @@ def index() -> FileResponse:
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok", "app": "orange-sprout-v7"}
+    return {
+        "status": "ok",
+        "app": "orange-sprout-v7",
+        "database": database_backend(),
+    }
 
 
-def current_user(authorization: Annotated[str | None, Header()] = None) -> sqlite3.Row:
+DbRow = Mapping[str, Any]
+
+
+def current_user(authorization: Annotated[str | None, Header()] = None) -> DbRow:
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(401, "请先登录")
     token = authorization.removeprefix("Bearer ").strip()
@@ -358,7 +521,7 @@ def current_user(authorization: Annotated[str | None, Header()] = None) -> sqlit
     return row
 
 
-def completed_lessons(conn: sqlite3.Connection, user_id: int) -> set[int]:
+def completed_lessons(conn: DatabaseConnection, user_id: int) -> set[int]:
     return {
         int(row["lesson_id"])
         for row in conn.execute(
@@ -368,18 +531,31 @@ def completed_lessons(conn: sqlite3.Connection, user_id: int) -> set[int]:
     }
 
 
-def require_lesson_unlocked(conn: sqlite3.Connection, user_id: int, lesson_id: int) -> None:
+def require_lesson_unlocked(conn: DatabaseConnection, user_id: int, lesson_id: int) -> None:
     completed = completed_lessons(conn, user_id)
     if lesson_id != 1 and lesson_id not in completed and lesson_id - 1 not in completed:
         raise HTTPException(400, "请先完成上一课")
 
 
-def mark_activity(conn: sqlite3.Connection, user_id: int) -> None:
-    conn.execute("INSERT OR IGNORE INTO activity_days(user_id,activity_date) VALUES (?,?)", (user_id, date.today().isoformat()))
+def mark_activity(conn: DatabaseConnection, user_id: int) -> None:
+    conn.execute(
+        """
+        INSERT INTO activity_days(user_id,activity_date) VALUES (?,?)
+        ON CONFLICT(user_id,activity_date) DO NOTHING
+        """,
+        (user_id, date.today()),
+    )
 
 
-def streak_for(conn: sqlite3.Connection, user_id: int) -> int:
-    days = {r["activity_date"] for r in conn.execute("SELECT activity_date FROM activity_days WHERE user_id=?", (user_id,)).fetchall()}
+def streak_for(conn: DatabaseConnection, user_id: int) -> int:
+    days = {
+        value.isoformat() if isinstance(value, date) else str(value)
+        for row in conn.execute(
+            "SELECT activity_date FROM activity_days WHERE user_id=?",
+            (user_id,),
+        ).fetchall()
+        for value in [row["activity_date"]]
+    }
     d = date.today()
     if d.isoformat() not in days:
         d -= timedelta(days=1)
@@ -390,7 +566,7 @@ def streak_for(conn: sqlite3.Connection, user_id: int) -> int:
     return streak
 
 
-def me_payload(user: sqlite3.Row) -> dict:
+def me_payload(user: DbRow) -> dict:
     with connect() as conn:
         completed = [int(r["lesson_id"]) for r in conn.execute("SELECT lesson_id FROM lesson_progress WHERE user_id=? ORDER BY lesson_id", (user["id"],)).fetchall()]
         quiz_done = [r["question_id"] for r in conn.execute("SELECT DISTINCT question_id FROM quiz_attempts WHERE user_id=? AND correct=1", (user["id"],)).fetchall()]
@@ -424,7 +600,7 @@ def register(data: RegisterIn, request: Request) -> dict:
                 """,
                 (account, account, data.age_group, salt, digest),
             )
-    except sqlite3.IntegrityError as exc:
+    except DATABASE_INTEGRITY_ERRORS as exc:
         raise HTTPException(409, "学习账号已经存在") from exc
     return {"ok": True, "account": account}
 
@@ -441,7 +617,12 @@ def login(data: LoginIn, request: Request) -> dict:
             raise HTTPException(401, "学习账号或密码错误")
         token = secrets.token_urlsafe(32)
         conn.execute("DELETE FROM sessions WHERE expires_at IS NULL OR expires_at<=CURRENT_TIMESTAMP")
-        expires_at = (datetime.now(UTC) + timedelta(days=SESSION_DAYS)).strftime("%Y-%m-%d %H:%M:%S")
+        expires_at_value = datetime.now(UTC) + timedelta(days=SESSION_DAYS)
+        expires_at: datetime | str = (
+            expires_at_value
+            if conn.backend == "postgresql"
+            else expires_at_value.strftime("%Y-%m-%d %H:%M:%S")
+        )
         conn.execute(
             "INSERT INTO sessions(token,user_id,expires_at) VALUES (?,?,?)",
             (session_key(token), user["id"], expires_at),
@@ -449,7 +630,7 @@ def login(data: LoginIn, request: Request) -> dict:
     return {"token":token}
 
 @app.post("/api/logout")
-def logout(user: Annotated[sqlite3.Row, Depends(current_user)], authorization: Annotated[str | None, Header()] = None) -> dict:
+def logout(user: Annotated[DbRow, Depends(current_user)], authorization: Annotated[str | None, Header()] = None) -> dict:
     del user
     token = authorization.removeprefix("Bearer ").strip() if authorization else ""
     with connect() as conn:
@@ -457,26 +638,35 @@ def logout(user: Annotated[sqlite3.Row, Depends(current_user)], authorization: A
     return {"ok":True}
 
 @app.get("/api/me")
-def me(user: Annotated[sqlite3.Row, Depends(current_user)]) -> dict:
+def me(user: Annotated[DbRow, Depends(current_user)]) -> dict:
     return me_payload(user)
 
 @app.post("/api/progress/{lesson_id}/step")
-def lesson_step(lesson_id: int, data: LessonStepIn, user: Annotated[sqlite3.Row, Depends(current_user)]) -> dict:
+def lesson_step(lesson_id: int, data: LessonStepIn, user: Annotated[DbRow, Depends(current_user)]) -> dict:
     if lesson_id not in LESSON_IDS:
         raise HTTPException(404, "课程不存在")
     with connect() as conn:
         require_lesson_unlocked(conn, int(user["id"]), lesson_id)
         old = conn.execute("SELECT step FROM lesson_steps WHERE user_id=? AND lesson_id=?", (user["id"], lesson_id)).fetchone()
         step = max(int(old["step"]) if old else 0, int(data.step))
-        conn.execute("""
-          INSERT INTO lesson_steps(user_id,lesson_id,step,updated_at) VALUES (?,?,?,CURRENT_TIMESTAMP)
-          ON CONFLICT(user_id,lesson_id) DO UPDATE SET step=MAX(lesson_steps.step,excluded.step),updated_at=CURRENT_TIMESTAMP
-        """, (user["id"], lesson_id, step))
+        conn.execute(
+            """
+            INSERT INTO lesson_steps(user_id,lesson_id,step,updated_at)
+            VALUES (?,?,?,CURRENT_TIMESTAMP)
+            ON CONFLICT(user_id,lesson_id) DO UPDATE SET
+              step=CASE
+                WHEN lesson_steps.step > excluded.step THEN lesson_steps.step
+                ELSE excluded.step
+              END,
+              updated_at=CURRENT_TIMESTAMP
+            """,
+            (user["id"], lesson_id, step),
+        )
         mark_activity(conn, int(user["id"]))
     return me_payload(user)
 
 @app.post("/api/progress/{lesson_id}/complete")
-def complete(lesson_id: int, user: Annotated[sqlite3.Row, Depends(current_user)]) -> dict:
+def complete(lesson_id: int, user: Annotated[DbRow, Depends(current_user)]) -> dict:
     if lesson_id not in LESSON_IDS:
         raise HTTPException(404, "课程不存在")
     with connect() as conn:
@@ -503,7 +693,13 @@ def complete(lesson_id: int, user: Annotated[sqlite3.Row, Depends(current_user)]
         ).fetchone()
         if not code_passed:
             raise HTTPException(400, "请先通过本课代码挑战")
-        conn.execute("INSERT OR IGNORE INTO lesson_progress(user_id,lesson_id) VALUES (?,?)", (user["id"],lesson_id))
+        conn.execute(
+            """
+            INSERT INTO lesson_progress(user_id,lesson_id) VALUES (?,?)
+            ON CONFLICT(user_id,lesson_id) DO NOTHING
+            """,
+            (user["id"], lesson_id),
+        )
         conn.execute("""
           INSERT INTO lesson_steps(user_id,lesson_id,step,updated_at) VALUES (?,?,5,CURRENT_TIMESTAMP)
           ON CONFLICT(user_id,lesson_id) DO UPDATE SET step=5,updated_at=CURRENT_TIMESTAMP
@@ -512,7 +708,7 @@ def complete(lesson_id: int, user: Annotated[sqlite3.Row, Depends(current_user)]
     return me_payload(user)
 
 @app.post("/api/quiz-attempts")
-def quiz_attempt(data: QuizAttemptIn, user: Annotated[sqlite3.Row, Depends(current_user)]) -> dict:
+def quiz_attempt(data: QuizAttemptIn, user: Annotated[DbRow, Depends(current_user)]) -> dict:
     if data.question_id not in QUESTION_IDS:
         raise HTTPException(404, "题目不存在")
     lesson_id = int(data.question_id.removeprefix("q"))
@@ -534,7 +730,7 @@ def quiz_attempt(data: QuizAttemptIn, user: Annotated[sqlite3.Row, Depends(curre
 @app.post("/api/code-submissions")
 def code_submission(
     data: CodeSubmissionIn,
-    user: Annotated[sqlite3.Row, Depends(current_user)],
+    user: Annotated[DbRow, Depends(current_user)],
 ) -> dict:
     if data.task_id not in TASK_IDS or data.lesson_id not in LESSON_IDS:
         raise HTTPException(404, "代码任务不存在")
@@ -713,7 +909,7 @@ def execute_student_code(code: str) -> str:
 
 
 @app.post('/api/run-code')
-def run_code(data: RunCodeIn, user: Annotated[sqlite3.Row, Depends(current_user)]) -> dict:
+def run_code(data: RunCodeIn, user: Annotated[DbRow, Depends(current_user)]) -> dict:
     enforce_rate_limit("run-code", str(user["id"]), 30, 60)
     return {"output": execute_student_code(data.code)}
 
@@ -758,7 +954,7 @@ def qwen_region(base_url: str) -> str:
 
 
 def consume_ai_quota(user_id: int, daily_limit: int = 40) -> None:
-    usage_date = date.today().isoformat()
+    usage_date = date.today()
     with connect() as conn:
         cursor = conn.execute(
             """
@@ -796,7 +992,7 @@ def assistant_status() -> dict:
 
 
 @app.post("/api/assistant")
-def assistant(data: AssistantIn, user: Annotated[sqlite3.Row, Depends(current_user)]) -> dict:
+def assistant(data: AssistantIn, user: Annotated[DbRow, Depends(current_user)]) -> dict:
     enforce_rate_limit("assistant", str(user["id"]), 8, 60)
     api_key, base_url, model = qwen_settings()
     if not api_key:

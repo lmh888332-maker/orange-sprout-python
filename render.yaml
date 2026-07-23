@@ -10,12 +10,21 @@ services:
     autoDeployTrigger: commit
     envVars:
       - key: APP_RELEASE
-        value: secure-learning-flow-20260723-r1
+        value: postgres-answer-style-20260723
       - key: PYTHON_VERSION
         value: 3.12.8
+      - key: DATABASE_URL
+        fromDatabase:
+          name: orange-sprout-db
+          property: connectionString
       - key: QWEN_BASE_URL
         value: https://dashscope.aliyuncs.com/compatible-mode/v1
       - key: QWEN_MODEL
         value: qwen3.6-flash
       - key: DASHSCOPE_API_KEY
         sync: false
+
+databases:
+  - name: orange-sprout-db
+    plan: free
+    region: singapore

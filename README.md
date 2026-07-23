@@ -39,7 +39,9 @@ QWEN_MODEL=qwen3.6-flash
 
 仓库已包含 `render.yaml`。在 Render 中选择 **New + → Blueprint**，连接本仓库并创建服务，然后在服务环境变量中填写 `DASHSCOPE_API_KEY`。
 
-SQLite 数据库仅适合个人演示。免费云实例休眠、重启或重新部署时，本地数据库不会永久保留；正式长期运营必须改用 PostgreSQL 或付费持久磁盘。
+Blueprint 会创建 `orange-sprout-db` PostgreSQL，并自动把内部连接地址注入为 `DATABASE_URL`。正式站的账号、课程进度、小测和代码提交因此不会在普通重新部署后丢失；本地未设置 `DATABASE_URL` 时仍使用 SQLite。
+
+Render 免费 PostgreSQL 只适合作业演示：容量为 1 GB，创建 30 天后到期且不提供备份。需要长期运营时，应在到期前升级数据库实例。
 
 ## 学习与安全规则
 

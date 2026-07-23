@@ -80,6 +80,8 @@ SOLUTIONS = {
 class OrangeSproutTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp_dir = tempfile.TemporaryDirectory()
+        self.original_database_url = main.DATABASE_URL
+        main.DATABASE_URL = ""
         main.DB_PATH = Path(self.temp_dir.name) / "test.db"
         main._rate_events.clear()
         main.init_db()
@@ -87,6 +89,7 @@ class OrangeSproutTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.client.close()
+        main.DATABASE_URL = self.original_database_url
         self.temp_dir.cleanup()
 
     def register_and_login(self, account: str = "测试学生") -> dict[str, str]:
@@ -138,6 +141,43 @@ class OrangeSproutTests(unittest.TestCase):
                 output = main.execute_student_code(code)
                 self.assertEqual(output.strip(), main.TASK_RULES[task_id]["expected"].strip())
         self.assertIn("<strong>正确答案</strong>", html)
+        self.assertIn('class="answer-code"', html)
+        self.assertIn(".hint-solution pre.answer-code code{display:block", html)
+        self.assertIn("background:transparent;color:inherit;font:inherit", html)
+        self.assertNotIn(
+            "${state.hintIndex===total?'正确答案':`提示",
+            html,
+        )
+
+    def test_database_configuration_supports_postgres_and_local_sqlite(self) -> None:
+        self.assertEqual(main.database_backend(), "sqlite")
+        self.assertEqual(
+            main.adapt_sql("SELECT * FROM users WHERE username=?", "postgresql"),
+            "SELECT * FROM users WHERE username=%s",
+        )
+        self.assertIn("BIGSERIAL PRIMARY KEY", main.POSTGRES_SCHEMA)
+        self.assertIn("TIMESTAMPTZ", main.POSTGRES_SCHEMA)
+        render_yaml = (Path(main.__file__).parent / "render.yaml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("fromDatabase:", render_yaml)
+        self.assertIn("name: orange-sprout-db", render_yaml)
+        self.assertIn("databases:", render_yaml)
+
+    def test_account_survives_database_reinitialization(self) -> None:
+        self.register_and_login("持久化学生")
+        main.init_db()
+        login = self.client.post(
+            "/api/login",
+            json={"account": "持久化学生", "password": "orange123"},
+        )
+        self.assertEqual(login.status_code, 200, login.text)
+        self.assertTrue(login.json()["token"])
+
+    def test_health_reports_database_backend(self) -> None:
+        response = self.client.get("/health")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["database"], "sqlite")
 
     def test_guardian_consent_is_required(self) -> None:
         response = self.client.post(
