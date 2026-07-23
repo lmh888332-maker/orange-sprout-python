@@ -10,12 +10,12 @@ services:
     autoDeployTrigger: commit
     envVars:
       - key: APP_RELEASE
-        value: progressive-actionable-hints-20260719
+        value: secure-learning-flow-20260723
       - key: PYTHON_VERSION
         value: 3.12.8
       - key: QWEN_BASE_URL
         value: https://dashscope.aliyuncs.com/compatible-mode/v1
       - key: QWEN_MODEL
-        value: qwen-plus
+        value: qwen3.6-flash
       - key: DASHSCOPE_API_KEY
         sync: false

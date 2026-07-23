@@ -30,7 +30,7 @@ Windows PowerShell 激活虚拟环境：
 ```text
 DASHSCOPE_API_KEY=你的阿里云百炼APIKey
 QWEN_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-QWEN_MODEL=qwen-plus
+QWEN_MODEL=qwen3.6-flash
 ```
 
 不要把真实 API Key 写进前端、代码或提交到 GitHub。未配置 API Key 时，网站会自动使用基础规则助教。
@@ -39,7 +39,27 @@ QWEN_MODEL=qwen-plus
 
 仓库已包含 `render.yaml`。在 Render 中选择 **New + → Blueprint**，连接本仓库并创建服务，然后在服务环境变量中填写 `DASHSCOPE_API_KEY`。
 
-SQLite 数据库适合个人演示。免费云实例重启或重新部署时，本地数据库可能不会永久保留；正式长期运营建议改用 PostgreSQL。
+SQLite 数据库仅适合个人演示。免费云实例休眠、重启或重新部署时，本地数据库不会永久保留；正式长期运营必须改用 PostgreSQL 或付费持久磁盘。
+
+## 学习与安全规则
+
+- 每课需要同时通过对应代码挑战和本课小测，才能完成并解锁下一课。
+- 练习中心只抽取已经完成课程的题目，实验室不会开放尚未解锁的任务。
+- 小测正确性和代码挑战结果均由服务端重新判定，浏览器提交的结果不会被直接采信。
+- 实验室前两级提示提供思路，第三级显示完整正确答案；进入题目时不会预填答案。
+- 实验室代码会自动保存在当前浏览器中，切换任务后仍可继续。
+- 登录会话有效期为 30 天；登录、注册、代码运行和 AI 助教均有限流保护。
+
+## 自动化测试
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+python -m unittest discover -s tests -v
+```
+
+测试覆盖 18 道标准答案、服务端小测判定、课程解锁、代码挑战必做、防止写死输出和会话过期。
 
 ## 主要文件
 
